@@ -225,6 +225,8 @@ public class OverallFragment extends RecyclerViewFragment {
             mUpTime.setStatsOne(("Total: ") + Utils.getDurationBreakdown(SystemClock.elapsedRealtime()));
             mUpTime.setStatsTwo(("Awake: ") + Utils.getDurationBreakdown(SystemClock.uptimeMillis()));
             mUpTime.setStatsThree(("Deep Sleep: ") + Utils.getDurationBreakdown(SystemClock.elapsedRealtime() - SystemClock.uptimeMillis()));
+            mUpTime.setTitle("ASV:" + Device.getAsv());
+
         }
         if (mBatteryInfo != null) {
             mBatteryInfo.setStatsOne(("Voltage: ") + Battery.BatteryVoltage() + (" mV"));

@@ -32,6 +32,8 @@ import com.grarak.kerneladiutor.views.recyclerview.RecyclerViewItem;
 import com.grarak.kerneladiutor.views.recyclerview.SeekBarView;
 import com.grarak.kerneladiutor.views.recyclerview.SwitchView;
 
+import com.sammy.etweaks.utils.kernel.misc.Pwm;
+
 import java.util.List;
 
 /**
@@ -56,8 +58,11 @@ public class DisplayLEDFragment extends RecyclerViewFragment {
                 || mLED.hasLEDBrightnessW() || mLED.hasSpeed() || mLED.hasWhiteLED() || mLED.hasYellowLED()
                 || Sec.hasNotificationRampDown() || Sec.hasNotificationRampUp() || Sec.hasNotificationRampControl()
                 || mLED.hasFade() || Sec.hasNotificationDelayOff() || Sec.hasNotificationDelayOn()
-                || Sec.hasLowpowerCurrent() || Sec.hasHighpowerCurrent()) {
+                || Sec.hasLowpowerCurrent() || Sec.hasHighpowerCurrent() || Pwm.supported()) {
             displayandledInit(items);
+            if (Pwm.supported()) {
+                pwmInit(items);
+            }
         }
     }
 
@@ -525,6 +530,21 @@ public class DisplayLEDFragment extends RecyclerViewFragment {
         if (DisplyAndLED.size() > 0) {
             items.add(DisplyAndLED);
         }
+    }
+
+    private void pwmInit(List<RecyclerViewItem> items) {
+        CardView pwmCard = new CardView(getActivity());
+        pwmCard.setTitle("PWM Flicker Free");
+
+        SwitchView enable = new SwitchView();
+        enable.setTitle("PWM Flicker Free");
+        enable.setSummary("Reduces negative impact on eyesight but may impact battery life");
+        enable.setChecked(Pwm.isPwmEnabled());
+        enable.addOnSwitchListener((switchView, isChecked) -> Pwm.enablePwm(isChecked, getActivity()));
+
+        pwmCard.addItem(enable);
+
+        items.add(pwmCard);
     }
 
 }
