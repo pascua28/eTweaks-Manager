@@ -26,6 +26,7 @@ import com.grarak.kerneladiutor.utils.AppSettings;
 import com.grarak.kerneladiutor.utils.Utils;
 import com.sammy.etweaks.utils.kernel.bus.VoltageInt;
 import com.grarak.kerneladiutor.views.recyclerview.CardView;
+import com.grarak.kerneladiutor.views.recyclerview.DescriptionView;
 import com.grarak.kerneladiutor.views.recyclerview.RecyclerViewItem;
 import com.grarak.kerneladiutor.views.recyclerview.SeekBarView;
 import com.grarak.kerneladiutor.views.recyclerview.SwitchView;
@@ -66,7 +67,11 @@ public class BusIntFragment extends RecyclerViewFragment {
         if (freqs != null && voltages != null && voltagesStock != null && freqs.size() == voltages.size()) {
 
             CardView freqCard = new CardView(getActivity());
-            freqCard.setTitle(getString(R.string.busInt_volt_control));
+            freqCard.setTitle(getString(R.string.busInt_volt_title));
+
+            DescriptionView busInt = new DescriptionView();
+            busInt.setSummary(getString(R.string.busInt_volt_summary));
+            freqCard.addItem(busInt);
 
             List<String> progress = new ArrayList<>();
             for (float i = mVoltMinValue; i < (mVoltMaxValue + mVoltStep); i += mVoltStep) {
@@ -105,7 +110,7 @@ public class BusIntFragment extends RecyclerViewFragment {
             }
 
             TitleView tunables = new TitleView();
-            tunables.setText(getString(R.string.busInt_volt));
+            tunables.setText(getString(R.string.voltages));
             items.add(tunables);
 
             for (int i = 0; i < freqs.size(); i++) {
