@@ -354,6 +354,8 @@
     <string name="nr_max_cpu">Maximum Online CPUs</string>
     <string name="nr_min_cpu">Minimum Online CPUs</string>
     <string name="adv_sett">Advanced Settings</string>
+    <string name="big_cores_max_title">Allow 4 Cores to máx freq.</string>
+    <string name="big_cores_max_summary">Allows the 4 BIG Cores to go to the maximum frequency, increases the performance, but will consume more battery</string>
 
     <!-- CPU Voltage -->
     <string name="global_offset">Global Offset</string>

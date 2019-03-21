@@ -135,7 +135,6 @@ public class CPUFragment extends RecyclerViewFragment {
         if (!mCPUFreq.isBigLITTLE()) {
             cpuCard.setTitle(getString(R.string.cpu));
 	}
-
         mCPUUsageBig = new XYGraphView();
         if (mCPUFreq.isBigLITTLE()) {
             mCPUUsageBig.setTitle(getString(R.string.cpu_usage_string, getString(R.string.cluster_big)));
@@ -181,6 +180,21 @@ public class CPUFragment extends RecyclerViewFragment {
             }
         });
         cpuCard.addItem(mCPUMinBig);
+
+        if(mCPUFreq.hasBigAllCoresMaxFreq()) {
+            SwitchView bigAll = new SwitchView();
+            bigAll.setTitle(getString(R.string.big_cores_max_title));
+            bigAll.setSummary(getString(R.string.big_cores_max_summary));
+            bigAll.setChecked(mCPUFreq.isBigAllCoresMaxFreq());
+            bigAll.addOnSwitchListener((switchView, isChecked) -> {
+                if (!isChecked) {
+                    mCPUFreq.setMaxFreq(2288000, bigCores.get(0),
+                            bigCores.get(bigCores.size() - 1), getActivity());
+                }
+                mCPUFreq.enableBigAllCoresMaxFreq(isChecked, getActivity());
+            });
+            cpuCard.addItem(bigAll);
+        }
 
         if (mCPUFreq.hasMaxScreenOffFreq()) {
             mCPUMaxScreenOffBig = new SelectView();
