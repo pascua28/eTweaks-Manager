@@ -128,6 +128,8 @@ public class CPUFreq {
             }
         }
         if (mpdecision) {
+            for (int i = min; i <= max; i++)
+                run(Control.chmod("644", Utils.strFormat(CPU_ONLINE, i)), null, null);
             MPDecision.enableMpdecision(true, null);
         }
         if (cpulock) {
