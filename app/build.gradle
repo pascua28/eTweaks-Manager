@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
 
 android {
 
     signingConfigs {
         release {
-            storeFile file("sp.jks")
-            storePassword "smartpack"
-            keyAlias "sp_key1"
-            keyPassword "smartpack"
+            storeFile file("key.jks")
+            storePassword "etweaks"
+            keyAlias "eTweaks"
+            keyPassword "etweaks"
         }
     }
 
@@ -15,8 +16,8 @@ android {
     buildToolsVersion '29.0.3'
 
     defaultConfig {
-        applicationId "com.smartpack.kernelmanager"
-        minSdkVersion 15
+        applicationId "com.sammy.etweaks"
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode 96
         versionName "9.15"
@@ -68,6 +69,8 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'org.adw.library:discrete-seekbar:1.0.1'
     implementation 'org.cyanogenmod:platform.sdk:6.0'
+    implementation 'com.google.firebase:firebase-auth:19.2.0'
+    implementation 'com.google.firebase:firebase-firestore:21.4.0'
 
     testImplementation 'junit:junit:4.13'
 }

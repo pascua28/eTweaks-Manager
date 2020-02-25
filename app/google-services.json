@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "868628474902",
+    "firebase_url": "https://etweaks-92f4b.firebaseio.com",
+    "project_id": "etweaks-92f4b",
+    "storage_bucket": "etweaks-92f4b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:868628474902:android:a32bc63861a9c7f2add937",
+        "android_client_info": {
+          "package_name": "com.sammy.etweaks"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "868628474902-bg1n991k95ovkstgd0flum6k8vtssert.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCjvvy2I9hFZIWThWlL1rRPL-xh0gqFW24"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "868628474902-bg1n991k95ovkstgd0flum6k8vtssert.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
