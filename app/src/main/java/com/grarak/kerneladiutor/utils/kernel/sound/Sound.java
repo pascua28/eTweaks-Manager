@@ -25,6 +25,7 @@ import com.grarak.kerneladiutor.fragments.ApplyOnBootFragment;
 import com.grarak.kerneladiutor.utils.Utils;
 import com.grarak.kerneladiutor.utils.root.Control;
 import com.grarak.kerneladiutor.utils.root.RootUtils;
+import com.sammy.etweaks.utils.kernel.sound.MoroSound;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -329,7 +330,7 @@ public class Sound {
     }
 
     public boolean supported() {
-        return hasSoundControlDir();
+        return hasSoundControlDir() || MoroSound.supported();
     }
 
     private int getChecksum(int arg0, int arg1) {

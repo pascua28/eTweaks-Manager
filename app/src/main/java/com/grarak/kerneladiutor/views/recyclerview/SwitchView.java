@@ -49,6 +49,8 @@ public class SwitchView extends RecyclerViewItem {
     private Drawable mImage;
     private CharSequence mTitleText;
     private CharSequence mSummaryText;
+    private CharSequence mSummaryOnText;
+    private CharSequence mSummaryOffText;
     private boolean mChecked;
 
     private List<OnSwitchListener> mOnSwitchListeners = new ArrayList<>();
@@ -100,6 +102,16 @@ public class SwitchView extends RecyclerViewItem {
 
     public void setSummary(CharSequence summary) {
         mSummaryText = summary;
+        refresh();
+    }
+
+    public void setSummaryOn(CharSequence summary) {
+        mSummaryOnText = summary;
+        refresh();
+    }
+
+    public void setSummaryOff(CharSequence summary) {
+        mSummaryOffText = summary;
         refresh();
     }
 
