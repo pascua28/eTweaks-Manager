@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "868628474902-3m8i7omtebtgv6n4m8if6r4dbj00m9ug.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sammy.etweaks",
+            "certificate_hash": "0f41194daf5cc242f2dcd6ce7a2537f5199dba35"
+          }
+        },
+        {
           "client_id": "868628474902-bg1n991k95ovkstgd0flum6k8vtssert.apps.googleusercontent.com",
           "client_type": 3
         }
