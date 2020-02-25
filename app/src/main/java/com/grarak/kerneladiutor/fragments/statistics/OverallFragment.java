@@ -165,7 +165,11 @@ public class OverallFragment extends RecyclerViewFragment {
             });
 
             mBatteryInfo = new MultiStatsView();
-            mBatteryInfo.setTitle((" Health: ") + Battery.BatteryHealth());
+
+            if (Battery.getHealthValue() != null)
+                mBatteryInfo.setTitle((" Health: ") + Battery.BatteryHealth() + "/" + Battery.getHealthValue() + "%");
+            else
+                mBatteryInfo.setTitle((" Health: ") + Battery.BatteryHealth());
             battery.addItem(mBatteryInfo);
             items.add(battery);
         }

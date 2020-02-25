@@ -74,12 +74,14 @@ public class Battery {
 
     private static final String BLX = "/sys/devices/virtual/misc/batterylifeextender/charging_limit";
 
+    private static final String CHARGE_S7 = "/sys/devices/battery";
     private static final String POWER_SUPPLY = "/sys/class/power_supply";
     private static final String CHARGING_CURRENT = POWER_SUPPLY + "/battery/current_now";
     private static final String CHARGE_STATUS = POWER_SUPPLY + "/battery/status";
     private static final String CHARGE_SOURCE = POWER_SUPPLY + "/battery/batt_charging_source";
     private static final String BCL = POWER_SUPPLY + "/battery/batt_slate_mode";
     private static final String HEALTH = POWER_SUPPLY + "/battery/health";
+    private static final String S7_FG_FULLCAPNOM = CHARGE_S7 + "/power_supply/battery/fg_fullcapnom";
     private static final String LEVEL = POWER_SUPPLY + "/battery/capacity";
     private static final String VOLTAGE = POWER_SUPPLY + "/battery/voltage_now";
     private static final String ENABLE_CHARGING = POWER_SUPPLY + "/battery/charging_enabled";
@@ -88,7 +90,7 @@ public class Battery {
     private static final String CHARGE_TYPE = POWER_SUPPLY + "/usb/type";
     private static final String OP_OTG_SWITCH = POWER_SUPPLY + "/usb/otg_switch";
 
-    private int mCapacity;
+    private static int mCapacity;
     private static String[] sBatteryAvailable;
     private static String[] sBatteryUSBAvailable;
     private static String[] sBatteryWIRELESSAvailable;
@@ -105,6 +107,19 @@ public class Battery {
                 e.printStackTrace();
                 mCapacity = 0;
             }
+        }
+    }
+
+    public static String getHealthValue() {
+        float cap = Utils.strToInt(Utils.readFile(S7_FG_FULLCAPNOM));
+        if (cap != 0) {
+            float value = ((cap * 2) / getCapacity()) * 100;
+            if (value > 100) {
+                value = value / 2;
+            }
+            return String.format("%.2f", value);
+        } else {
+            return null;
         }
     }
 
@@ -432,7 +447,7 @@ public class Battery {
         return Utils.readFile(OP_OTG_SWITCH).equals("1");
     }
 
-    public int getCapacity() {
+    public static int getCapacity() {
         return mCapacity;
     }
 
