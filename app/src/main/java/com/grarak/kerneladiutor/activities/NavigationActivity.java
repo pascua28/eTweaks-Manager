@@ -94,6 +94,10 @@ import com.grarak.kerneladiutor.utils.kernel.thermal.Thermal;
 import com.grarak.kerneladiutor.utils.kernel.wake.Wake;
 import com.grarak.kerneladiutor.utils.root.RootUtils;
 import com.grarak.kerneladiutor.utils.tools.Backup;
+import com.sammy.etweaks.fragments.kernel.BusCamFragment;
+import com.sammy.etweaks.fragments.kernel.BusDispFragment;
+import com.sammy.etweaks.fragments.kernel.BusIntFragment;
+import com.sammy.etweaks.fragments.kernel.BusMifFragment;
 
 import org.frap129.spectrum.SpectrumFragment;
 import org.frap129.spectrum.Spectrum;
@@ -105,6 +109,10 @@ import com.smartpack.kernelmanager.fragments.SmartPackFragment;
 import com.smartpack.kernelmanager.fragments.WakelockFragment;
 import com.smartpack.kernelmanager.utils.KLapse;
 import com.smartpack.kernelmanager.utils.Wakelocks;
+import com.sammy.etweaks.utils.kernel.bus.VoltageCam;
+import com.sammy.etweaks.utils.kernel.bus.VoltageDisp;
+import com.sammy.etweaks.utils.kernel.bus.VoltageInt;
+import com.sammy.etweaks.utils.kernel.bus.VoltageMif;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -180,6 +188,19 @@ public class NavigationActivity extends BaseActivity
         mFragments.add(new NavigationActivity.NavigationFragment(R.string.inputs, InputsFragment.class, R.drawable.ic_keyboard));
         mFragments.add(new NavigationActivity.NavigationFragment(R.string.kernel));
         mFragments.add(new NavigationActivity.NavigationFragment(R.string.cpu, CPUFragment.class, R.drawable.ic_cpu));
+
+        if (VoltageMif.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.busMif_volt, BusMifFragment.class, R.drawable.ic_bolt));
+        }
+        if (VoltageInt.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.busInt_volt, BusIntFragment.class, R.drawable.ic_bolt));
+        }
+        if (VoltageDisp.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.busDisp_volt, BusDispFragment.class, R.drawable.ic_bolt));
+        }
+        if (VoltageCam.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.busCam_volt, BusCamFragment.class, R.drawable.ic_bolt));
+        }
         if (Hotplug.supported()) {
             mFragments.add(new NavigationActivity.NavigationFragment(R.string.cpu_hotplug, CPUHotplugFragment.class, R.drawable.ic_switch));
         }

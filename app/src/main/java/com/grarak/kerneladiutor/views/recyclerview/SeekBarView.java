@@ -56,6 +56,7 @@ public class SeekBarView extends RecyclerViewItem {
     private List<String> mItems;
     private int mOffset = 1;
     private boolean mEnabled = true;
+    private float mAlpha = 1f;
 
     private OnSeekBarListener mOnSeekBarListener;
 
@@ -172,6 +173,11 @@ public class SeekBarView extends RecyclerViewItem {
         refresh();
     }
 
+    public void setAlpha(float alpha) {
+        mAlpha = alpha;
+        refresh();
+    }
+
     public int getProgress() {
         return mProgress;
     }
@@ -203,6 +209,7 @@ public class SeekBarView extends RecyclerViewItem {
         if (mSeekBar != null) {
             mSeekBar.setMax(mItems.size() - 1);
             mSeekBar.setMin(0);
+            mSeekBar.setAlpha(mAlpha);
             mSeekBar.setEnabled(mEnabled);
             if (mValue != null) {
                 try {
@@ -213,6 +220,11 @@ public class SeekBarView extends RecyclerViewItem {
                 } catch (Exception ignored) {
                     mValue.setText(mValue.getResources().getString(R.string.not_in_range));
                 }
+            }
+            if(mEnabled){
+                mSeekBar.setAlpha(1f);
+            } else {
+                mSeekBar.setAlpha(0.4f);
             }
         }
     }

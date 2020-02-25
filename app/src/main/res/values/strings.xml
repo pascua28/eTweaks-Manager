@@ -75,6 +75,7 @@
     <string name="cpu">CPU</string>
     <string name="cpu_hotplug">CPU Hotplug</string>
     <string name="cpu_voltage">CPU Voltage</string>
+    <string name="bus_voltage">Bus Voltages</string>
     <string name="gpu">GPU</string>
     <string name="thermal">Thermal</string>
     <string name="battery">Battery</string>
@@ -100,6 +101,7 @@
     <string name="about">About</string>
     <string name="contributors">Contributors</string>
     <string name="help" translatable="false">FAQ</string>
+    <string name="def">Default</string>
 
     <!-- Overall -->
     <string name="overall_summary">Welcome to the home page of SmartPack-Kernel Manager. This page provides very basic information of your device. Advanced kernel tweaking options can be found on respective pages.</string>
@@ -208,6 +210,21 @@
     <string name="cpuiboost_duration_summary">Set CPU Input Boost duration</string>
     <string name="wake_boost_duration">Wake Boost Duration</string>
     <string name="cluster_return_freq">Cluster Return Frequency</string>
+
+    <!-- BUS -->
+    <string name="busMif_volt_control">Bus MIF Voltage Control</string>
+    <string name="busMif_volt">Bus MIF Voltages</string>
+    <string name="busInt_volt_control">Bus INT Voltage Control</string>
+    <string name="busInt_volt">Bus INT Voltages</string>
+    <string name="busDisp_volt_control">Bus DISP Voltage Control</string>
+    <string name="busDisp_volt">Bus DISP Voltages</string>
+    <string name="busCam_volt_control">Bus CAM Voltage Control</string>
+    <string name="busCam_volt">Bus CAM Voltages</string>
+    <string name="cpu_manual_volt">Individual or Global voltage</string>
+    <string name="cpu_manual_volt_summaryOn">When you activate Individual Control, the Global Control bar will return to its initial position and you can freely vary the individual bars\n\nGlobal Control Enabled</string>
+    <string name="cpu_manual_volt_summaryOff">When you activate Individual Control, the Global Control bar will return to its initial position and you can freely vary the individual bars\n\nIndividual Control Enabled</string>
+    <string name="cpu_volt_profile">Voltage Profile</string>
+    <string name="cpu_volt_profile_summary">Modify the global voltage</string>
 
     <!-- CPU Hotplug -->
     <string name="hotplug_warning">More than one hotplugging system is enabled!\nPlease only use one.</string>
