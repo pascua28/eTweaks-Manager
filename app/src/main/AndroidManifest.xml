@@ -164,7 +164,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.grarak.kerneladiutor.provider"
+            android:authorities="com.sammy.etweaks.provider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
