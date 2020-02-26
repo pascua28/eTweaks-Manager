@@ -1,5 +1,5 @@
 {
-  "releaseNotes": "Change-logs\n - Build Prop: Improved search UI (mainly on light theme).\n - IO: Add support to Adoptable storage (DM-0).\n - Misc: Updated some titles (suggested by KA developer).\n - Miscellaneous changes.",
-  "latestVersion": "9.15",
-  "latestVersionCode": 96
+  "releaseNotes": "Change-logs\n - Rebrand to eTweaks (all credits goes to sunilpaulmatthew.\n - Show banner ads.\n - [MSM8974] Unbreak mpdecision functionality when changing CPU policies.\n - [HEROLTE] Added MoRo sound, all big cores to max toggle, BUS voltage control & battery health value.\n [ATOMU] Add Huawei EasyWakeup gesture",
+  "latestVersion": "1.0",
+  "latestVersionCode": 97
 }

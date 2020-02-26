@@ -45,7 +45,7 @@ import java.io.File;
 
 public class UpdateCheck {
 
-    private static final String LATEST_VERSION_URL = "https://raw.githubusercontent.com/SmartPack/SmartPack-Kernel-Manager/master/download/App-update.json";
+    private static final String LATEST_VERSION_URL = "https://raw.githubusercontent.com/pascua28/eTweaks-Manager/master/download/App-update.json";
     private static final String UPDATE_INFO = Utils.getInternalDataStorage() + "/update_info.json";
     private static final String UPDATE_INFO_STRING = Utils.readFile(UPDATE_INFO);
 
@@ -105,7 +105,7 @@ public class UpdateCheck {
                 .setNegativeButton(context.getString(R.string.cancel), (dialog, id) -> {
                 })
                 .setPositiveButton(context.getString(R.string.get_it), (dialog, id) -> {
-                    Utils.launchUrl("https://github.com/SmartPack/SmartPack-Kernel-Manager/releases/latest", context);
+                    Utils.launchUrl("https://github.com/pascua28/eTweaks-Manager/releases/latest", context);
                 })
                 .show();
     }
