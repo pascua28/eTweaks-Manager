@@ -24,6 +24,7 @@ import com.grarak.kerneladiutor.fragments.ApplyOnBootFragment;
 import com.grarak.kerneladiutor.fragments.RecyclerViewFragment;
 import com.grarak.kerneladiutor.utils.kernel.wake.Dt2s;
 import com.grarak.kerneladiutor.utils.kernel.wake.Dt2w;
+import com.grarak.kerneladiutor.utils.kernel.wake.Easywake;
 import com.grarak.kerneladiutor.utils.kernel.wake.Gestures;
 import com.grarak.kerneladiutor.utils.kernel.wake.Misc;
 import com.grarak.kerneladiutor.utils.kernel.wake.S2s;
@@ -50,6 +51,7 @@ public class WakeFragment extends RecyclerViewFragment {
     private Dt2s mDt2s;
     private S2s mS2s;
     private Misc mMisc;
+    private Easywake mEasywake;
 
     @Override
     protected void init() {
@@ -61,6 +63,7 @@ public class WakeFragment extends RecyclerViewFragment {
         mDt2s = Dt2s.getInstance();
         mS2s = S2s.getInstance();
         mMisc = Misc.getInstance();
+        mEasywake = Easywake.getInstance();
         addViewPagerFragment(ApplyOnBootFragment.newInstance(this));
     }
 
@@ -71,7 +74,7 @@ public class WakeFragment extends RecyclerViewFragment {
                 || mMisc.hasTimeout() || mMisc.hasChargeTimeout() || mMisc.hasPowerKeySuspend()
                 || mMisc.hasKeyPowerMode() || mMisc.hasChargingMode() || mMisc.hasVibration()
                 || mMisc.hasVibVibration() || mMisc.hasSmartWake() || mDt2s.hasHeight()
-                || mDt2s.hasWidth() || mS2w.supported() || mS2w.hasS2W() || mS2w.hasLenient()) {
+                || mDt2s.hasWidth() || mS2w.supported() || mS2w.hasS2W() || mS2w.hasLenient() || mEasywake.supported()) {
             wakeInit(items);
         }
     }
@@ -98,6 +101,23 @@ public class WakeFragment extends RecyclerViewFragment {
             });
 
             wakeCard.addItem(dt2w);
+        }
+
+        if (mEasywake.supported()) {
+            SelectView easywake = new SelectView();
+            easywake.setTitle(getString(R.string.dt2w));
+            easywake.setSummary(getString(R.string.dt2w_summary));
+            easywake.setItems(mDt2w.getMenu(getActivity()));
+            easywake.setItem(mDt2w.get());
+            easywake.setOnItemSelected((selectView, position, item) -> {
+                mDt2w.set(position, getActivity());
+                getHandler().postDelayed(() -> {
+                            easywake.setItem(mEasywake.get());
+                        },
+                        500);
+            });
+
+            wakeCard.addItem(easywake);
         }
 
         int n = mS2w.get();
