@@ -83,6 +83,9 @@ public class GPUFragment extends RecyclerViewFragment {
         if (SimpleGPU.supported()) {
             simpleGpuInit(items);
         }
+        if (GPUFreq.hasPowerPolicy()) {
+            powerPolicyInit(items);
+        }
         if (GPUFreq.hasVoltage()) {
             voltageInit(items);
         }
@@ -199,7 +202,7 @@ public class GPUFragment extends RecyclerViewFragment {
             tun.setText(getString(R.string.gov_tunables));
             govCard.addItem(tun);
 
-            if (GPUFreq.hasHighspeedClock()){
+            if (GPUFreq.hasHighspeedClock()) {
                 List<String> freqs = new ArrayList<>();
                 List<Integer> list = GPUFreq.getAvailableFreqsSort();
 
@@ -233,7 +236,7 @@ public class GPUFragment extends RecyclerViewFragment {
                 }
             }
 
-            if (GPUFreq.hasHighspeedLoad()){
+            if (GPUFreq.hasHighspeedLoad()) {
 
                 SeekBarView seekbar = new SeekBarView();
                 seekbar.setTitle(getString(R.string.tun_highspeed_load));
@@ -247,6 +250,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     public void onStop(SeekBarView seekBarView, int position, String value) {
                         GPUFreq.setHighspeedLoad((position + 1), getActivity());
                     }
+
                     @Override
                     public void onMove(SeekBarView seekBarView, int position, String value) {
                     }
@@ -255,7 +259,7 @@ public class GPUFragment extends RecyclerViewFragment {
                 govCard.addItem(seekbar);
             }
 
-            if (GPUFreq.hasHighspeedDelay()){
+            if (GPUFreq.hasHighspeedDelay()) {
 
                 SeekBarView seekbar = new SeekBarView();
                 seekbar.setTitle(getString(R.string.tun_highspeed_delay));
@@ -269,6 +273,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     public void onStop(SeekBarView seekBarView, int position, String value) {
                         GPUFreq.setHighspeedDelay(position, getActivity());
                     }
+
                     @Override
                     public void onMove(SeekBarView seekBarView, int position, String value) {
                     }
@@ -324,6 +329,29 @@ public class GPUFragment extends RecyclerViewFragment {
 
         if (govCard.size() > 0) {
             items.add(govCard);
+        }
+    }
+
+    private void powerPolicyInit(List<RecyclerViewItem> items) {
+        CardView powCard = new CardView(getActivity());
+        powCard.setTitle(getString(R.string.gpu_power_policy_card));
+
+        SelectView powPol = new SelectView();
+        powPol.setTitle(getString(R.string.gpu_power_policy));
+        powPol.setSummary(getString(R.string.gpu_power_policy_summary));
+        powPol.setItems(GPUFreq.getPowerPolicies());
+        powPol.setItem(GPUFreq.getPowerPolicy());
+        powPol.setOnItemSelected(new SelectView.OnItemSelected() {
+            @Override
+            public void onItemSelected(SelectView selectView, int position, String item) {
+                GPUFreq.setPowerPolicy(item, getActivity());
+            }
+        });
+
+        powCard.addItem(powPol);
+
+        if (powCard.size() > 0) {
+            items.add(powCard);
         }
     }
 
@@ -429,6 +457,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     }
                 }, 200);
             }
+
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
@@ -444,14 +473,14 @@ public class GPUFragment extends RecyclerViewFragment {
         float mMax = ((Utils.strToFloat(voltageStock) + 25) * mOffset) + mStep;
 
         List<String> progress = new ArrayList<>();
-        for(float i = mMin ; i < mMax; i += mStep){
+        for (float i = mMin; i < mMax; i += mStep) {
             String string = String.valueOf(i / mOffset);
             progress.add(string);
         }
 
         int value = 0;
         for (int i = 0; i < progress.size(); i++) {
-            if (Objects.equals(progress.get(i), voltage)){
+            if (Objects.equals(progress.get(i), voltage)) {
                 value = i;
                 break;
             }
@@ -465,7 +494,7 @@ public class GPUFragment extends RecyclerViewFragment {
         seekbar.setItems(progress);
         seekbar.setProgress(value);
         seekbar.setEnabled(enableSeekbar);
-        if(!enableSeekbar) seekbar.setAlpha(0.4f);
+        if (!enableSeekbar) seekbar.setAlpha(0.4f);
         else seekbar.setAlpha(1f);
         seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
 
@@ -490,83 +519,83 @@ public class GPUFragment extends RecyclerViewFragment {
         CardView simpleGpu = new CardView(getActivity());
         simpleGpu.setTitle(getString(R.string.simple_gpu_algorithm));
 
-	SeekBarView laziness = new SeekBarView();
-	SeekBarView rampThreshold = new SeekBarView();
+        SeekBarView laziness = new SeekBarView();
+        SeekBarView rampThreshold = new SeekBarView();
 
-	SwitchView enable = new SwitchView();
-	enable.setSummary(getString(R.string.simple_gpu_algorithm_summary));
-	enable.setChecked(SimpleGPU.isSimpleGpuEnabled());
-	enable.addOnSwitchListener((switchView, isChecked) -> {
-	    SimpleGPU.enableSimpleGpu(isChecked, getActivity());
-	    getHandler().postDelayed(() -> {
-	    // Show or hide other options on the basis of the main driver status
-	    if (SimpleGPU.isSimpleGpuEnabled()) {
-		if (SimpleGPU.hasSimpleGpuLaziness()) {
-		    laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
-		    simpleGpu.addItem(laziness);
-		}
-		if (SimpleGPU.hasSimpleGpuRampThreshold()) {
-		    rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
-		    simpleGpu.addItem(rampThreshold);
-		}
-	    } else {
-		simpleGpu.removeItem(laziness);
-		simpleGpu.removeItem(rampThreshold);
-	    }
-	}, 100);
-	});
+        SwitchView enable = new SwitchView();
+        enable.setSummary(getString(R.string.simple_gpu_algorithm_summary));
+        enable.setChecked(SimpleGPU.isSimpleGpuEnabled());
+        enable.addOnSwitchListener((switchView, isChecked) -> {
+            SimpleGPU.enableSimpleGpu(isChecked, getActivity());
+            getHandler().postDelayed(() -> {
+                // Show or hide other options on the basis of the main driver status
+                if (SimpleGPU.isSimpleGpuEnabled()) {
+                    if (SimpleGPU.hasSimpleGpuLaziness()) {
+                        laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
+                        simpleGpu.addItem(laziness);
+                    }
+                    if (SimpleGPU.hasSimpleGpuRampThreshold()) {
+                        rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
+                        simpleGpu.addItem(rampThreshold);
+                    }
+                } else {
+                    simpleGpu.removeItem(laziness);
+                    simpleGpu.removeItem(rampThreshold);
+                }
+            }, 100);
+        });
 
-	simpleGpu.addItem(enable);
+        simpleGpu.addItem(enable);
 
-	laziness.setTitle(getString(R.string.laziness));
-	laziness.setSummary(getString(R.string.laziness_summary));
-	laziness.setMax(10);
-	laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
-	laziness.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+        laziness.setTitle(getString(R.string.laziness));
+        laziness.setSummary(getString(R.string.laziness_summary));
+        laziness.setMax(10);
+        laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
+        laziness.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
 
             @Override
             public void onStop(SeekBarView seekBarView, int position, String value) {
-		SimpleGPU.setSimpleGpuLaziness(position, getActivity());
-		getHandler().postDelayed(() -> {
-		laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
-		},
-	    500);
+                SimpleGPU.setSimpleGpuLaziness(position, getActivity());
+                getHandler().postDelayed(() -> {
+                            laziness.setProgress(SimpleGPU.getSimpleGpuLaziness());
+                        },
+                        500);
             }
-	});
+        });
 
-	if (SimpleGPU.isSimpleGpuEnabled() && SimpleGPU.hasSimpleGpuLaziness()) {
-	    simpleGpu.addItem(laziness);
-	} else {
-	    simpleGpu.removeItem(laziness);
-	}
+        if (SimpleGPU.isSimpleGpuEnabled() && SimpleGPU.hasSimpleGpuLaziness()) {
+            simpleGpu.addItem(laziness);
+        } else {
+            simpleGpu.removeItem(laziness);
+        }
 
-	rampThreshold.setTitle(getString(R.string.ramp_thresold));
-	rampThreshold.setSummary(getString(R.string.ramp_thresold_summary));
-	rampThreshold.setMax(10);
-	rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
-	rampThreshold.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+        rampThreshold.setTitle(getString(R.string.ramp_thresold));
+        rampThreshold.setSummary(getString(R.string.ramp_thresold_summary));
+        rampThreshold.setMax(10);
+        rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
+        rampThreshold.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
 
             @Override
             public void onStop(SeekBarView seekBarView, int position, String value) {
-		SimpleGPU.setSimpleGpuRampThreshold(position, getActivity());
-		getHandler().postDelayed(() -> {
-		rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
-		},
-	    500);
+                SimpleGPU.setSimpleGpuRampThreshold(position, getActivity());
+                getHandler().postDelayed(() -> {
+                            rampThreshold.setProgress(SimpleGPU.getSimpleGpuRampThreshold());
+                        },
+                        500);
             }
-	});
+        });
 
-	if (SimpleGPU.isSimpleGpuEnabled() && SimpleGPU.hasSimpleGpuRampThreshold()) {
-	    simpleGpu.addItem(rampThreshold);
-	} else {
-	    simpleGpu.removeItem(rampThreshold);
-	}
+        if (SimpleGPU.isSimpleGpuEnabled() && SimpleGPU.hasSimpleGpuRampThreshold()) {
+            simpleGpu.addItem(rampThreshold);
+        } else {
+            simpleGpu.removeItem(rampThreshold);
+        }
 
         if (simpleGpu.size() > 0) {
             items.add(simpleGpu);
@@ -577,128 +606,128 @@ public class GPUFragment extends RecyclerViewFragment {
         CardView adrenoIdler = new CardView(getActivity());
         adrenoIdler.setTitle(getString(R.string.adreno_idler));
 
-	SeekBarView downDiff = new SeekBarView();
-	SeekBarView idleWait = new SeekBarView();
-	SeekBarView idleWorkload = new SeekBarView();
+        SeekBarView downDiff = new SeekBarView();
+        SeekBarView idleWait = new SeekBarView();
+        SeekBarView idleWorkload = new SeekBarView();
 
-	SwitchView enable = new SwitchView();
-	enable.setSummary(getString(R.string.adreno_idler_summary));
-	enable.setChecked(AdrenoIdler.isAdrenoIdlerEnabled());
-	enable.addOnSwitchListener((switchView, isChecked) -> {
-	    AdrenoIdler.enableAdrenoIdler(isChecked, getActivity());
-	    getHandler().postDelayed(() -> {
-	    // Show or hide other adreno idler options on the basis of the main driver status
-	    if (AdrenoIdler.isAdrenoIdlerEnabled()) {
-		if (AdrenoIdler.hasAdrenoIdlerDownDiff()) {
-		    downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
-		    adrenoIdler.addItem(downDiff);
-		}
-		if (AdrenoIdler.hasAdrenoIdlerIdleWait()) {
-		    idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
-		    adrenoIdler.addItem(idleWait);
-		}
-		if (AdrenoIdler.hasAdrenoIdlerIdleWorkload()) {
-		    idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
-		    adrenoIdler.addItem(idleWorkload);
-		}
-	    } else {
-		adrenoIdler.removeItem(downDiff);
-		adrenoIdler.removeItem(idleWait);
-		adrenoIdler.removeItem(idleWorkload);
-	    }
-	}, 100);
+        SwitchView enable = new SwitchView();
+        enable.setSummary(getString(R.string.adreno_idler_summary));
+        enable.setChecked(AdrenoIdler.isAdrenoIdlerEnabled());
+        enable.addOnSwitchListener((switchView, isChecked) -> {
+            AdrenoIdler.enableAdrenoIdler(isChecked, getActivity());
+            getHandler().postDelayed(() -> {
+                // Show or hide other adreno idler options on the basis of the main driver status
+                if (AdrenoIdler.isAdrenoIdlerEnabled()) {
+                    if (AdrenoIdler.hasAdrenoIdlerDownDiff()) {
+                        downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
+                        adrenoIdler.addItem(downDiff);
+                    }
+                    if (AdrenoIdler.hasAdrenoIdlerIdleWait()) {
+                        idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
+                        adrenoIdler.addItem(idleWait);
+                    }
+                    if (AdrenoIdler.hasAdrenoIdlerIdleWorkload()) {
+                        idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
+                        adrenoIdler.addItem(idleWorkload);
+                    }
+                } else {
+                    adrenoIdler.removeItem(downDiff);
+                    adrenoIdler.removeItem(idleWait);
+                    adrenoIdler.removeItem(idleWorkload);
+                }
+            }, 100);
 
-	});
+        });
 
-	adrenoIdler.addItem(enable);
+        adrenoIdler.addItem(enable);
 
-	downDiff.setTitle(getString(R.string.down_differential));
-	downDiff.setSummary(getString(R.string.down_differential_summary));
-	downDiff.setMax(99);
-	downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
-	downDiff.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+        downDiff.setTitle(getString(R.string.down_differential));
+        downDiff.setSummary(getString(R.string.down_differential_summary));
+        downDiff.setMax(99);
+        downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
+        downDiff.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
 
             @Override
             public void onStop(SeekBarView seekBarView, int position, String value) {
-		AdrenoIdler.setAdrenoIdlerDownDiff(position, getActivity());
-		getHandler().postDelayed(() -> {
-		downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
-		},
-	    500);
+                AdrenoIdler.setAdrenoIdlerDownDiff(position, getActivity());
+                getHandler().postDelayed(() -> {
+                            downDiff.setProgress(AdrenoIdler.getAdrenoIdlerDownDiff());
+                        },
+                        500);
             }
-	});
+        });
 
-	if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerDownDiff()) {
-	    adrenoIdler.addItem(downDiff);
-	} else {
-	    adrenoIdler.removeItem(downDiff);
-	}
+        if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerDownDiff()) {
+            adrenoIdler.addItem(downDiff);
+        } else {
+            adrenoIdler.removeItem(downDiff);
+        }
 
-	idleWait.setTitle(getString(R.string.idle_wait));
-	idleWait.setSummary(getString(R.string.idle_wait_summary));
-	idleWait.setMax(99);
-	idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
-	idleWait.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+        idleWait.setTitle(getString(R.string.idle_wait));
+        idleWait.setSummary(getString(R.string.idle_wait_summary));
+        idleWait.setMax(99);
+        idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
+        idleWait.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
 
             @Override
             public void onStop(SeekBarView seekBarView, int position, String value) {
-		AdrenoIdler.setAdrenoIdlerIdleWait(position, getActivity());
-		getHandler().postDelayed(() -> {
-		idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
-		},
-	    500);
+                AdrenoIdler.setAdrenoIdlerIdleWait(position, getActivity());
+                getHandler().postDelayed(() -> {
+                            idleWait.setProgress(AdrenoIdler.getAdrenoIdlerIdleWait());
+                        },
+                        500);
             }
-	});
+        });
 
-	if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerIdleWait()) {
-	    adrenoIdler.addItem(idleWait);
-	} else {
-	    adrenoIdler.removeItem(idleWait);
-	}
+        if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerIdleWait()) {
+            adrenoIdler.addItem(idleWait);
+        } else {
+            adrenoIdler.removeItem(idleWait);
+        }
 
-	idleWorkload.setTitle(getString(R.string.workload));
-	idleWorkload.setSummary(getString(R.string.workload_summary));
-	idleWorkload.setMax(10);
-	idleWorkload.setMin(1);
-	idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
-	idleWorkload.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+        idleWorkload.setTitle(getString(R.string.workload));
+        idleWorkload.setSummary(getString(R.string.workload_summary));
+        idleWorkload.setMax(10);
+        idleWorkload.setMin(1);
+        idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
+        idleWorkload.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
             @Override
             public void onMove(SeekBarView seekBarView, int position, String value) {
             }
 
             @Override
             public void onStop(SeekBarView seekBarView, int position, String value) {
-		AdrenoIdler.setAdrenoIdlerIdleWorkload(position + 1, getActivity());
-		getHandler().postDelayed(() -> {
-		idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
-		},
-	    500);
+                AdrenoIdler.setAdrenoIdlerIdleWorkload(position + 1, getActivity());
+                getHandler().postDelayed(() -> {
+                            idleWorkload.setProgress(AdrenoIdler.getAdrenoIdlerIdleWorkload() - 1);
+                        },
+                        500);
             }
-	});
+        });
 
-	if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerIdleWorkload()) {
-	    adrenoIdler.addItem(idleWorkload);
-	} else {
-	    adrenoIdler.removeItem(idleWorkload);
-	}
+        if (AdrenoIdler.isAdrenoIdlerEnabled() && AdrenoIdler.hasAdrenoIdlerIdleWorkload()) {
+            adrenoIdler.addItem(idleWorkload);
+        } else {
+            adrenoIdler.removeItem(idleWorkload);
+        }
 
-	if (adrenoIdler.size() > 0) {
+        if (adrenoIdler.size() > 0) {
             items.add(adrenoIdler);
-	}
+        }
     }
 
     private void adrenoboostInit(List<RecyclerViewItem> items) {
         CardView adrenoboost = new CardView(getActivity());
         adrenoboost.setTitle(getString(R.string.adrenoboost));
 
-	if (Adrenoboost.supported()) {
-  		 List<String> list = new ArrayList<>();
+        if (Adrenoboost.supported()) {
+            List<String> list = new ArrayList<>();
             list.add("Off");
             list.add("Low");
             list.add("Medium");
@@ -711,28 +740,29 @@ public class GPUFragment extends RecyclerViewFragment {
                 @Override
                 public void onMove(SeekBarView seekBarView, int position, String value) {
                 }
-                 @Override
+
+                @Override
                 public void onStop(SeekBarView seekBarView, int position, String value) {
                     Adrenoboost.setAdrenoBoost(position, getActivity());
-		    getHandler().postDelayed(() -> {
-		    boost.setProgress(Adrenoboost.getAdrenoBoost());
-		    },
-	    	500);
+                    getHandler().postDelayed(() -> {
+                                boost.setProgress(Adrenoboost.getAdrenoBoost());
+                            },
+                            500);
                 }
             });
 
-	    adrenoboost.addItem(boost);
-	}
-	if (adrenoboost.size() > 0) {
+            adrenoboost.addItem(boost);
+        }
+        if (adrenoboost.size() > 0) {
             items.add(adrenoboost);
-	}
+        }
     }
 
     private void devfreqBoostInit(List<RecyclerViewItem> items) {
         CardView devfreqboost = new CardView(getActivity());
         devfreqboost.setTitle(getString(R.string.devfreq_boost));
 
-	if (DevfreqBoost.hasDevfreqboostDuration()) {
+        if (DevfreqBoost.hasDevfreqboostDuration()) {
             GenericSelectView dbduration = new GenericSelectView();
             dbduration.setTitle(getString(R.string.devfreq_boost_ms) + (" (ms)"));
             dbduration.setSummary(getString(R.string.devfreq_boost_ms_summary));
@@ -743,18 +773,18 @@ public class GPUFragment extends RecyclerViewFragment {
                 public void onGenericValueSelected(GenericSelectView genericSelectView, String value) {
                     DevfreqBoost.setDevfreqboostDuration(value, getActivity());
                     genericSelectView.setValue(value);
-		    getHandler().postDelayed(() -> {
-		    dbduration.setValue(DevfreqBoost.getDevfreqboostDuration());
-		    },
-	    	500);
+                    getHandler().postDelayed(() -> {
+                                dbduration.setValue(DevfreqBoost.getDevfreqboostDuration());
+                            },
+                            500);
                 }
             });
 
-	    devfreqboost.addItem(dbduration);
+            devfreqboost.addItem(dbduration);
 
-	}
+        }
 
-	if (DevfreqBoost.haswakeboostduration()) {
+        if (DevfreqBoost.haswakeboostduration()) {
             GenericSelectView wakeBoostMS = new GenericSelectView();
             wakeBoostMS.setTitle(getString(R.string.wake_boost_duration) + (" (ms)"));
             wakeBoostMS.setSummary(("Set ") + getString(R.string.wake_boost_duration));
@@ -765,17 +795,17 @@ public class GPUFragment extends RecyclerViewFragment {
                 public void onGenericValueSelected(GenericSelectView genericSelectView, String value) {
                     DevfreqBoost.setwakeboostduration(value, getActivity());
                     genericSelectView.setValue(value);
-		    getHandler().postDelayed(() -> {
-		    wakeBoostMS.setValue(DevfreqBoost.getwakeboostduration());
-		    },
-	    	500);
+                    getHandler().postDelayed(() -> {
+                                wakeBoostMS.setValue(DevfreqBoost.getwakeboostduration());
+                            },
+                            500);
                 }
             });
 
             devfreqboost.addItem(wakeBoostMS);
-	}
+        }
 
-	if (DevfreqBoost.hasDevfreqboostFreq()) {
+        if (DevfreqBoost.hasDevfreqboostFreq()) {
             GenericSelectView dbfreq = new GenericSelectView();
             dbfreq.setTitle(getString(R.string.devfreq_boost_freq) + (" (Hz)"));
             dbfreq.setSummary(getString(R.string.devfreq_boost_freq_summary));
@@ -786,20 +816,20 @@ public class GPUFragment extends RecyclerViewFragment {
                 public void onGenericValueSelected(GenericSelectView genericSelectView, String value) {
                     DevfreqBoost.setDevfreqboostFreq(value, getActivity());
                     genericSelectView.setValue(value);
-		    getHandler().postDelayed(() -> {
-		    dbfreq.setValue(DevfreqBoost.getDevfreqboostFreq());
-		    },
-	    	500);
+                    getHandler().postDelayed(() -> {
+                                dbfreq.setValue(DevfreqBoost.getDevfreqboostFreq());
+                            },
+                            500);
                 }
             });
 
-	    devfreqboost.addItem(dbfreq);
+            devfreqboost.addItem(dbfreq);
 
-	}
+        }
 
-	if (devfreqboost.size() > 0) {
+        if (devfreqboost.size() > 0) {
             items.add(devfreqboost);
-	}
+        }
     }
 
     private Integer m2dFreq;

@@ -97,6 +97,7 @@ public class GPUFreq {
     private static final String TUNABLE_HIGHSPEED_CLOCK = "/sys/devices/14ac0000.mali/highspeed_clock";
     private static final String TUNABLE_HIGHSPEED_LOAD = "/sys/devices/14ac0000.mali/highspeed_load";
     private static final String TUNABLE_HIGHSPEED_DELAY = "/sys/devices/14ac0000.mali/highspeed_delay";
+    private static final String POWER_POLICY = "/sys/devices/14ac0000.mali/power_policy";
 
     private final List<String> mGpuBusys = new ArrayList<>();
     private final HashMap<String, Integer> mCurrentFreqs = new HashMap<>();
@@ -146,7 +147,6 @@ public class GPUFreq {
         mAvailableGovernors.add(AVAILABLE_KGSL3D0_DEVFREQ_GOVERNORS);
         mAvailableGovernors.add(AVAILABLE_OMAP_GOVERNORS);
         mAvailableGovernors.add(AVAILABLE_POWERVR_GOVERNORS);
-        mAvailableGovernors.add(AVAILABLE_S7_GOVERNORS);
 
         mTunables.add(TUNABLES_OMAP);
     }
@@ -313,17 +313,17 @@ public class GPUFreq {
 
     public void setGovernor(String value, Context context) {
         if (hasMaliGPU()) {
-            switch (value){
-                case "Default" :
+            switch (value) {
+                case "Default":
                     run(Control.write("0", GOVERNOR), GOVERNOR, context);
                     break;
-                case "Interactive" :
+                case "Interactive":
                     run(Control.write("1", GOVERNOR), GOVERNOR, context);
                     break;
-                case "Static" :
+                case "Static":
                     run(Control.write("2", GOVERNOR), GOVERNOR, context);
                     break;
-                case "Booster" :
+                case "Booster":
                     run(Control.write("3", GOVERNOR), GOVERNOR, context);
                     break;
             }
@@ -339,7 +339,7 @@ public class GPUFreq {
                 String[] lines = value.split("\\r?\\n");
                 List<String> governors = new ArrayList<>();
                 for (String line : lines) {
-                    if (line.startsWith("[Current Governor]")){
+                    if (line.startsWith("[Current Governor]")) {
                         break;
                     }
                     governors.add(line);
@@ -359,8 +359,8 @@ public class GPUFreq {
                 String[] lines = value.split("\\r?\\n");
                 String governor = "";
                 for (String line : lines) {
-                    if (line.startsWith("[Current Governor]")){
-                        governor = line.replace("[Current Governor] ", "");;
+                    if (line.startsWith("[Current Governor]")) {
+                        governor = line.replace("[Current Governor] ", "");
                     }
                 }
                 return governor;
@@ -448,20 +448,20 @@ public class GPUFreq {
     }
 
     public static List<Integer> getAvailableFreqs() {
-        if (hasMaliGPU()){
-                for (String file : mAvailableFreqs.keySet()) {
-                    if (Utils.existFile(file)) {
-                        String freqs[] = Utils.readFile(file).split("\\r?\\n");
-                        AVAILABLE_FREQS = new ArrayList<>();
-                        AVAILABLE_FREQS_SORT = new ArrayList<>();
-                        for (String freq : freqs) {
-                            String[] freqLine = freq.split(" ");
-                            AVAILABLE_FREQS.add(Utils.strToInt(freqLine[0].trim()));
-                            AVAILABLE_FREQS_SORT.add(Utils.strToInt(freqLine[0].trim()));
-                        }
-                        AVAILABLE_GOVERNORS_OFFSET = mAvailableFreqs.get(file);
-                        break;
+        if (hasMaliGPU()) {
+            for (String file : mAvailableFreqs.keySet()) {
+                if (Utils.existFile(file)) {
+                    String freqs[] = Utils.readFile(file).split("\\r?\\n");
+                    AVAILABLE_FREQS = new ArrayList<>();
+                    AVAILABLE_FREQS_SORT = new ArrayList<>();
+                    for (String freq : freqs) {
+                        String[] freqLine = freq.split(" ");
+                        AVAILABLE_FREQS.add(Utils.strToInt(freqLine[0].trim()));
+                        AVAILABLE_FREQS_SORT.add(Utils.strToInt(freqLine[0].trim()));
                     }
+                    AVAILABLE_GOVERNORS_OFFSET = mAvailableFreqs.get(file);
+                    break;
+                }
             }
             if (AVAILABLE_FREQS == null) return null;
             if (AVAILABLE_FREQS_SORT != null) {
@@ -563,7 +563,7 @@ public class GPUFreq {
     public static void setVoltage(Integer freq, String voltage, Context context) {
 
         //freq = String.valueOf(freq);
-        String volt = String.valueOf((int)(Utils.strToFloat(voltage) * VOLT_OFFSET));
+        String volt = String.valueOf((int) (Utils.strToFloat(voltage) * VOLT_OFFSET));
         run(Control.write(freq + " " + volt, AVAILABLE_S7_FREQS), AVAILABLE_S7_FREQS + freq, context);
     }
 
@@ -601,7 +601,34 @@ public class GPUFreq {
         return null;
     }
 
-    public static int getOffset () {
+    public static void setPowerPolicy(String value, Context context) {
+        run(Control.write(value, POWER_POLICY), POWER_POLICY, context);
+    }
+
+    public static String getPowerPolicy() {
+        String[] policies = Utils.readFile(POWER_POLICY).split(" ");
+        for (String policy : policies) {
+            if (policy.startsWith("[") && policy.endsWith("]")) {
+                return policy.replace("[", "").replace("]", "");
+            }
+        }
+        return "";
+    }
+
+    public static List<String> getPowerPolicies() {
+        String[] policies = Utils.readFile(POWER_POLICY).split(" ");
+        List<String> list = new ArrayList<>();
+        for (String policy : policies) {
+            list.add(policy.replace("[", "").replace("]", ""));
+        }
+        return list;
+    }
+
+    public static boolean hasPowerPolicy() {
+        return Utils.existFile(POWER_POLICY);
+    }
+
+    public static int getOffset() {
         return VOLT_OFFSET;
     }
 
