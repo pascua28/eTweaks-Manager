@@ -32,6 +32,8 @@ import com.grarak.kerneladiutor.views.recyclerview.CardView;
 import com.grarak.kerneladiutor.views.recyclerview.DescriptionView;
 import com.grarak.kerneladiutor.views.recyclerview.GenericSelectView;
 import com.grarak.kerneladiutor.views.recyclerview.RecyclerViewItem;
+import com.grarak.kerneladiutor.utils.AppSettings;
+import com.grarak.kerneladiutor.utils.Utils;
 import com.grarak.kerneladiutor.views.recyclerview.SeekBarView;
 import com.grarak.kerneladiutor.views.recyclerview.SelectView;
 import com.grarak.kerneladiutor.views.recyclerview.SwitchView;
@@ -45,6 +47,7 @@ import com.smartpack.kernelmanager.utils.GPUMisc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by willi on 12.05.16.
@@ -55,6 +58,8 @@ public class GPUFragment extends RecyclerViewFragment {
 
     private XYGraphView m2dCurFreq;
     private XYGraphView mCurFreq;
+    private List<SeekBarView> mVoltages = new ArrayList<>();
+    private SeekBarView mSeekbarProf = new SeekBarView();
 
     private PathReaderFragment mGPUGovernorTunableFragment;
 
@@ -74,8 +79,12 @@ public class GPUFragment extends RecyclerViewFragment {
     @Override
     protected void addItems(List<RecyclerViewItem> items) {
         gpuInit(items);
+        mVoltages.clear();
         if (SimpleGPU.supported()) {
             simpleGpuInit(items);
+        }
+        if (GPUFreq.hasVoltage()) {
+            voltageInit(items);
         }
         if (AdrenoIdler.supported()) {
             adrenoIdlerInit(items);
@@ -192,33 +201,36 @@ public class GPUFragment extends RecyclerViewFragment {
 
             if (GPUFreq.hasHighspeedClock()){
                 List<String> freqs = new ArrayList<>();
-                List<Integer> list = GPUFreq.getAvailableFreqs();
-                Collections.sort(list);
-                int value = 0;
-                for (int i = 0; i < list.size(); i++) {
-                    freqs.add(String.valueOf(list.get(i)));
-                    if (list.get(i) == GPUFreq.getHighspeedClock()){
-                        value = i;
+                List<Integer> list = GPUFreq.getAvailableFreqsSort();
+
+                if (list != null) {
+                    int value = 0;
+                    for (int i = 0; i < list.size(); i++) {
+                        freqs.add(String.valueOf(list.get(i)));
+                        if (list.get(i) == GPUFreq.getHighspeedClock()) {
+                            value = i;
+                        }
                     }
+
+                    SeekBarView seekbar = new SeekBarView();
+                    seekbar.setTitle(getString(R.string.tun_highspeed_clock));
+                    seekbar.setSummary(getString(R.string.tun_highspeed_clock_summary));
+                    seekbar.setUnit(getString(R.string.mhz));
+                    seekbar.setItems(freqs);
+                    seekbar.setProgress(value);
+                    seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+                        @Override
+                        public void onStop(SeekBarView seekBarView, int position, String value) {
+                            GPUFreq.setHighspeedClock(value, getActivity());
+                        }
+
+                        @Override
+                        public void onMove(SeekBarView seekBarView, int position, String value) {
+                        }
+                    });
+
+                    govCard.addItem(seekbar);
                 }
-
-                SeekBarView seekbar = new SeekBarView();
-                seekbar.setTitle(getString(R.string.tun_highspeed_clock));
-                seekbar.setSummary(getString(R.string.tun_highspeed_clock_summary));
-                seekbar.setUnit(getString(R.string.mhz));
-                seekbar.setItems(freqs);
-                seekbar.setProgress(value);
-                seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
-                    @Override
-                    public void onStop(SeekBarView seekBarView, int position, String value) {
-                        GPUFreq.setHighspeedClock(value, getActivity());
-                    }
-                    @Override
-                    public void onMove(SeekBarView seekBarView, int position, String value) {
-                    }
-                });
-
-                govCard.addItem(seekbar);
             }
 
             if (GPUFreq.hasHighspeedLoad()){
@@ -313,6 +325,165 @@ public class GPUFragment extends RecyclerViewFragment {
         if (govCard.size() > 0) {
             items.add(govCard);
         }
+    }
+
+    private void voltageInit(List<RecyclerViewItem> items) {
+
+        List<Integer> freqs = GPUFreq.getAvailableFreqs();
+        List<String> voltages = GPUFreq.getVoltages();
+        List<String> voltagesStock = GPUFreq.getStockVoltages();
+
+        if (freqs != null && voltages != null && voltagesStock != null && freqs.size() == voltages.size()) {
+
+            CardView voltCard = new CardView(getActivity());
+            voltCard.setTitle(getString(R.string.gpu_voltage));
+
+            List<String> progress = new ArrayList<>();
+            for (float i = -100000f; i < 31250f; i += 6250) {
+                String global = String.valueOf(i / GPUFreq.getOffset());
+                progress.add(global);
+            }
+
+            seekbarProfInit(mSeekbarProf, freqs, voltages, voltagesStock, progress);
+
+            voltCard.addItem(mSeekbarProf);
+
+            Boolean enableGlobal = AppSettings.getBoolean("gpu_global_volts", true, getActivity());
+
+            SwitchView voltControl = new SwitchView();
+            voltControl.setTitle(getString(R.string.cpu_manual_volt));
+            voltControl.setSummaryOn(getString(R.string.cpu_manual_volt_summaryOn));
+            voltControl.setSummaryOff(getString(R.string.cpu_manual_volt_summaryOff));
+            voltControl.setChecked(enableGlobal);
+            voltControl.addOnSwitchListener(new SwitchView.OnSwitchListener() {
+                @Override
+                public void onChanged(SwitchView switchView, boolean isChecked) {
+                    if (isChecked) {
+                        AppSettings.saveBoolean("gpu_global_volts", true, getActivity());
+                        AppSettings.saveBoolean("gpu_individual_volts", false, getActivity());
+                        reload();
+                    } else {
+                        AppSettings.saveBoolean("gpu_global_volts", false, getActivity());
+                        AppSettings.saveBoolean("gpu_individual_volts", true, getActivity());
+                        AppSettings.saveInt("gpu_seekbarPref_value", 16, getActivity());
+                        reload();
+                    }
+                }
+            });
+
+            voltCard.addItem(voltControl);
+
+            if (voltCard.size() > 0) {
+                items.add(voltCard);
+            }
+
+
+            TitleView tunables = new TitleView();
+            tunables.setText(getString(R.string.gpu_voltage));
+            items.add(tunables);
+
+            for (int i = 0; i < freqs.size(); i++) {
+                SeekBarView seekbar = new SeekBarView();
+                seekbarInit(seekbar, freqs.get(i), voltages.get(i), voltagesStock.get(i));
+                mVoltages.add(seekbar);
+            }
+            items.addAll(mVoltages);
+        }
+    }
+
+    private void seekbarProfInit(SeekBarView seekbar, final List<Integer> freqs, final List<String> voltages,
+                                 final List<String> voltagesStock, List<String> progress) {
+
+        Boolean enableSeekbar = AppSettings.getBoolean("gpu_global_volts", true, getActivity());
+        int global = AppSettings.getInt("gpu_seekbarPref_value", 16, getActivity());
+
+        int value = 0;
+        for (int i = 0; i < progress.size(); i++) {
+            if (i == global) {
+                value = i;
+                break;
+            }
+        }
+
+        seekbar.setTitle(getString(R.string.cpu_volt_profile));
+        seekbar.setSummary(getString(R.string.cpu_volt_profile_summary));
+        seekbar.setUnit(getString(R.string.mv));
+        seekbar.setItems(progress);
+        seekbar.setProgress(value);
+        seekbar.setEnabled(enableSeekbar);
+        if (!enableSeekbar) seekbar.setAlpha(0.4f);
+        else seekbar.setAlpha(1f);
+        seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+            @Override
+            public void onStop(SeekBarView seekBarView, int position, String value) {
+                for (int i = 0; i < voltages.size(); i++) {
+                    String volt = String.valueOf(Utils.strToFloat(voltagesStock.get(i)) + Utils.strToFloat(value));
+                    int freq = freqs.get(i);
+                    GPUFreq.setVoltage(freq, volt, getActivity());
+                    AppSettings.saveInt("gpu_seekbarPref_value", position, getActivity());
+                }
+                getHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        reload();
+                    }
+                }, 200);
+            }
+            @Override
+            public void onMove(SeekBarView seekBarView, int position, String value) {
+            }
+        });
+    }
+
+    private void seekbarInit(SeekBarView seekbar, final Integer freq, String voltage,
+                             String voltageStock) {
+
+        int mStep = 6250;
+        int mOffset = GPUFreq.getOffset();
+        float mMin = (Utils.strToFloat(voltageStock) - 100) * mOffset;
+        float mMax = ((Utils.strToFloat(voltageStock) + 25) * mOffset) + mStep;
+
+        List<String> progress = new ArrayList<>();
+        for(float i = mMin ; i < mMax; i += mStep){
+            String string = String.valueOf(i / mOffset);
+            progress.add(string);
+        }
+
+        int value = 0;
+        for (int i = 0; i < progress.size(); i++) {
+            if (Objects.equals(progress.get(i), voltage)){
+                value = i;
+                break;
+            }
+        }
+
+        Boolean enableSeekbar = AppSettings.getBoolean("gpu_individual_volts", false, getActivity());
+
+        seekbar.setTitle(freq + " " + getString(R.string.mhz));
+        seekbar.setSummary(getString(R.string.def) + ": " + voltageStock + " " + getString(R.string.mv));
+        seekbar.setUnit(getString(R.string.mv));
+        seekbar.setItems(progress);
+        seekbar.setProgress(value);
+        seekbar.setEnabled(enableSeekbar);
+        if(!enableSeekbar) seekbar.setAlpha(0.4f);
+        else seekbar.setAlpha(1f);
+        seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+
+            @Override
+            public void onStop(SeekBarView seekBarView, int position, String value) {
+                GPUFreq.setVoltage(freq, value, getActivity());
+                getHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        reload();
+                    }
+                }, 200);
+            }
+
+            @Override
+            public void onMove(SeekBarView seekBarView, int position, String value) {
+            }
+        });
     }
 
     private void simpleGpuInit(List<RecyclerViewItem> items) {
@@ -651,6 +822,25 @@ public class GPUFragment extends RecyclerViewFragment {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void reload() {
+        List<Integer> freqs = GPUFreq.getAvailableFreqs();
+        List<String> voltages = GPUFreq.getVoltages();
+        List<String> voltagesStock = GPUFreq.getStockVoltages();
+
+        if (freqs != null && voltages != null && voltagesStock != null) {
+            for (int i = 0; i < mVoltages.size(); i++) {
+                seekbarInit(mVoltages.get(i), freqs.get(i), voltages.get(i), voltagesStock.get(i));
+            }
+
+            List<String> progress = new ArrayList<>();
+            for (float i = -100000f; i < 31250f; i += 6250) {
+                String global = String.valueOf(i / GPUFreq.getOffset());
+                progress.add(global);
+            }
+            seekbarProfInit(mSeekbarProf, freqs, voltages, voltagesStock, progress);
         }
     }
 

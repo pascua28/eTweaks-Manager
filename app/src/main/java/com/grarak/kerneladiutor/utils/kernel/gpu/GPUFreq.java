@@ -25,6 +25,7 @@ import com.grarak.kerneladiutor.R;
 import com.grarak.kerneladiutor.fragments.ApplyOnBootFragment;
 import com.grarak.kerneladiutor.utils.Utils;
 import com.grarak.kerneladiutor.utils.root.Control;
+import com.grarak.kerneladiutor.utils.root.RootUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,8 @@ public class GPUFreq {
         }
         return sIOInstance;
     }
+
+    private static final String BACKUP = "/data/.mtweaks/gpu_stock_voltage";
 
     private static final String GENERIC_GOVERNORS = "performance powersave ondemand simple conservative";
 
@@ -152,6 +155,7 @@ public class GPUFreq {
     private String CUR_FREQ;
     private int CUR_FREQ_OFFSET;
     private static List<Integer> AVAILABLE_FREQS;
+    private static List<Integer> AVAILABLE_FREQS_SORT;
     private String MAX_FREQ;
     private int MAX_FREQ_OFFSET;
     private String MIN_FREQ;
@@ -160,6 +164,10 @@ public class GPUFreq {
     private String[] AVAILABLE_GOVERNORS;
     private static int AVAILABLE_GOVERNORS_OFFSET;
     private String TUNABLES;
+
+    private static String SPLIT_NEW_LINE = "\\r?\\n";
+    private static String SPLIT_LINE = " ";
+    private static Integer VOLT_OFFSET = 1000;
 
     private Integer[] AVAILABLE_2D_FREQS;
 
@@ -445,18 +453,27 @@ public class GPUFreq {
                     if (Utils.existFile(file)) {
                         String freqs[] = Utils.readFile(file).split("\\r?\\n");
                         AVAILABLE_FREQS = new ArrayList<>();
+                        AVAILABLE_FREQS_SORT = new ArrayList<>();
                         for (String freq : freqs) {
                             String[] freqLine = freq.split(" ");
                             AVAILABLE_FREQS.add(Utils.strToInt(freqLine[0].trim()));
+                            AVAILABLE_FREQS_SORT.add(Utils.strToInt(freqLine[0].trim()));
                         }
                         AVAILABLE_GOVERNORS_OFFSET = mAvailableFreqs.get(file);
                         break;
                     }
             }
             if (AVAILABLE_FREQS == null) return null;
-            Collections.sort(AVAILABLE_FREQS);
+            if (AVAILABLE_FREQS_SORT != null) {
+                Collections.sort(AVAILABLE_FREQS_SORT);
+            }
         }
         return AVAILABLE_FREQS;
+    }
+
+    public static List<Integer> getAvailableFreqsSort() {
+        if (AVAILABLE_FREQS_SORT == null) return null;
+        return AVAILABLE_FREQS_SORT;
     }
 
     public int getCurFreqOffset() {
@@ -543,7 +560,59 @@ public class GPUFreq {
         return Utils.existFile(TUNABLE_HIGHSPEED_DELAY);
     }
 
+    public static void setVoltage(Integer freq, String voltage, Context context) {
+
+        //freq = String.valueOf(freq);
+        String volt = String.valueOf((int)(Utils.strToFloat(voltage) * VOLT_OFFSET));
+        run(Control.write(freq + " " + volt, AVAILABLE_S7_FREQS), AVAILABLE_S7_FREQS + freq, context);
+    }
+
+    public static List<String> getStockVoltages() {
+        String value = Utils.readFile(BACKUP);
+        if (!value.isEmpty()) {
+            String[] lines = value.split(SPLIT_NEW_LINE);
+            List<String> voltages = new ArrayList<>();
+            for (String line : lines) {
+                String[] voltageLine = line.split(SPLIT_LINE);
+                if (voltageLine.length > 1) {
+                    voltages.add(String.valueOf(Utils.strToFloat(voltageLine[1].trim()) / VOLT_OFFSET));
+
+                }
+            }
+            return voltages;
+        }
+        return null;
+    }
+
+    public static List<String> getVoltages() {
+        String value = Utils.readFile(AVAILABLE_S7_FREQS);
+        if (!value.isEmpty()) {
+            String[] lines = value.split(SPLIT_NEW_LINE);
+            List<String> voltages = new ArrayList<>();
+            for (String line : lines) {
+                String[] voltageLine = line.split(SPLIT_LINE);
+                if (voltageLine.length > 1) {
+                    voltages.add(String.valueOf(Utils.strToFloat(voltageLine[1].trim()) / VOLT_OFFSET));
+
+                }
+            }
+            return voltages;
+        }
+        return null;
+    }
+
+    public static int getOffset () {
+        return VOLT_OFFSET;
+    }
+
+    public static boolean hasVoltage() {
+        return Utils.existFile(BACKUP);
+    }
+
     public boolean supported() {
+        if (!Utils.existFile(BACKUP)) {
+            RootUtils.runCommand("cp " + AVAILABLE_S7_FREQS + " " + BACKUP);
+        }
         return hasCurFreq()
                 || (hasMaxFreq() && getAvailableFreqs() != null)
                 || (hasMinFreq() && getAvailableFreqs() != null)
