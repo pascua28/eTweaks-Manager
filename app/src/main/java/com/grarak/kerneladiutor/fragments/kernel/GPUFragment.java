@@ -92,6 +92,9 @@ public class GPUFragment extends RecyclerViewFragment {
         CardView gpuCard = new CardView(getActivity());
         gpuCard.setTitle(getString(R.string.gpu));
 
+        CardView govCard = new CardView(getActivity());
+        govCard.setTitle(getString(R.string.gpu_governor));
+
         if (mGPUFreq.has2dCurFreq() && mGPUFreq.get2dAvailableFreqs() != null) {
             m2dCurFreq = new XYGraphView();
             m2dCurFreq.setTitle(getString(R.string.gpu_2d_freq));
@@ -185,7 +188,7 @@ public class GPUFragment extends RecyclerViewFragment {
 
             TitleView tun = new TitleView();
             tun.setText(getString(R.string.gov_tunables));
-            gpuCard.addItem(tun);
+            govCard.addItem(tun);
 
             if (GPUFreq.hasHighspeedClock()){
                 List<String> freqs = new ArrayList<>();
@@ -215,7 +218,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     }
                 });
 
-                gpuCard.addItem(seekbar);
+                govCard.addItem(seekbar);
             }
 
             if (GPUFreq.hasHighspeedLoad()){
@@ -237,7 +240,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     }
                 });
 
-                gpuCard.addItem(seekbar);
+                govCard.addItem(seekbar);
             }
 
             if (GPUFreq.hasHighspeedDelay()){
@@ -259,7 +262,7 @@ public class GPUFragment extends RecyclerViewFragment {
                     }
                 });
 
-                gpuCard.addItem(seekbar);
+                govCard.addItem(seekbar);
             }
 
             if (mGPUFreq.hasTunables(governor.getValue())) {
@@ -305,6 +308,10 @@ public class GPUFragment extends RecyclerViewFragment {
 
         if (gpuCard.size() > 0) {
             items.add(gpuCard);
+        }
+
+        if (govCard.size() > 0) {
+            items.add(govCard);
         }
     }
 
