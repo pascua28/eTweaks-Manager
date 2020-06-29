@@ -86,6 +86,12 @@ public class GPUFreq {
     private static final String SCALING_POWERVR_GOVERNOR = "/sys/devices/platform/dfrgx/devfreq/dfrgx/governor";
     private static final String AVAILABLE_POWERVR_GOVERNORS = "/sys/devices/platform/dfrgx/devfreq/dfrgx/available_governors";
 
+    private static final String MAX_S7_FREQ = "/sys/devices/14ac0000.mali/max_clock";
+    private static final String MIN_S7_FREQ = "/sys/devices/14ac0000.mali/min_clock";
+    private static final String CUR_S7_FREQ = "/sys/devices/14ac0000.mali/clock";
+    private static final String AVAILABLE_S7_FREQ = "/sys/devices/14ac0000.mali/dvfs_table";
+    private static final String AVAILABLE_S7_GOVERNORS = "/sys/devices/14ac0000.mali/dvfs_governor";
+
     private final List<String> mGpuBusys = new ArrayList<>();
     private final HashMap<String, Integer> mCurrentFreqs = new HashMap<>();
     private final HashMap<String, Integer> mMaxFreqs = new HashMap<>();
@@ -104,31 +110,37 @@ public class GPUFreq {
         mCurrentFreqs.put(CUR_OMAP_FREQ, 1000000);
         mCurrentFreqs.put(CUR_TEGRA_FREQ, 1000000);
         mCurrentFreqs.put(CUR_POWERVR_FREQ, 1000);
+        mCurrentFreqs.put(CUR_S7_FREQ, 1);
 
         mMaxFreqs.put(MAX_KGSL3D0_FREQ, 1000000);
         mMaxFreqs.put(MAX_KGSL3D0_DEVFREQ_FREQ, 1000000);
         mMaxFreqs.put(MAX_OMAP_FREQ, 1000000);
         mMaxFreqs.put(MAX_TEGRA_FREQ, 1000000);
         mMaxFreqs.put(MAX_POWERVR_FREQ, 1000);
+        mMaxFreqs.put(MAX_S7_FREQ, 1);
 
         mMinFreqs.put(MIN_KGSL3D0_DEVFREQ_FREQ, 1000000);
         mMinFreqs.put(MIN_TEGRA_FREQ, 1000000);
         mMinFreqs.put(MIN_POWERVR_FREQ, 1000);
+        mMinFreqs.put(MIN_S7_FREQ, 1);
 
         mAvailableFreqs.put(AVAILABLE_KGSL3D0_FREQS, 1000000);
         mAvailableFreqs.put(AVAILABLE_KGSL3D0_DEVFREQ_FREQS, 1000000);
         mAvailableFreqs.put(AVAILABLE_OMAP_FREQS, 1000000);
         mAvailableFreqs.put(AVAILABLE_TEGRA_FREQS, 1000000);
         mAvailableFreqs.put(AVAILABLE_POWERVR_FREQS, 1000);
+        mAvailableFreqs.put(AVAILABLE_S7_FREQ, 1);
 
         mScalingGovernors.add(SCALING_KGSL3D0_GOVERNOR);
         mScalingGovernors.add(SCALING_KGSL3D0_DEVFREQ_GOVERNOR);
         mScalingGovernors.add(SCALING_OMAP_GOVERNOR);
         mScalingGovernors.add(SCALING_POWERVR_GOVERNOR);
+        mScalingGovernors.add(AVAILABLE_S7_GOVERNORS);
 
         mAvailableGovernors.add(AVAILABLE_KGSL3D0_DEVFREQ_GOVERNORS);
         mAvailableGovernors.add(AVAILABLE_OMAP_GOVERNORS);
         mAvailableGovernors.add(AVAILABLE_POWERVR_GOVERNORS);
+        mAvailableGovernors.add(AVAILABLE_S7_GOVERNORS);
 
         mTunables.add(TUNABLES_OMAP);
     }
@@ -289,15 +301,63 @@ public class GPUFreq {
     }
 
     public void setGovernor(String value, Context context) {
-        run(Control.write(value, GOVERNOR), GOVERNOR, context);
+        if (hasMaliGPU()) {
+            switch (value){
+                case "Default" :
+                    run(Control.write("0", GOVERNOR), GOVERNOR, context);
+                    break;
+                case "Interactive" :
+                    run(Control.write("1", GOVERNOR), GOVERNOR, context);
+                    break;
+                case "Static" :
+                    run(Control.write("2", GOVERNOR), GOVERNOR, context);
+                    break;
+                case "Booster" :
+                    run(Control.write("3", GOVERNOR), GOVERNOR, context);
+                    break;
+            }
+        } else {
+            run(Control.write(value, GOVERNOR), GOVERNOR, context);
+        }
     }
 
     public List<String> getAvailableGovernors() {
-        return Arrays.asList(AVAILABLE_GOVERNORS);
+        if (hasMaliGPU()) {
+            String value = Utils.readFile(AVAILABLE_S7_GOVERNORS);
+            if (!value.isEmpty()) {
+                String[] lines = value.split("\\r?\\n");
+                List<String> governors = new ArrayList<>();
+                for (String line : lines) {
+                    if (line.startsWith("[Current Governor]")){
+                        break;
+                    }
+                    governors.add(line);
+                }
+                return governors;
+            }
+            return null;
+        } else {
+            return Arrays.asList(AVAILABLE_GOVERNORS);
+        }
     }
 
     public String getGovernor() {
-        return Utils.readFile(GOVERNOR);
+        if (hasMaliGPU()) {
+            String value = Utils.readFile(AVAILABLE_S7_GOVERNORS);
+            if (!value.isEmpty()) {
+                String[] lines = value.split("\\r?\\n");
+                String governor = "";
+                for (String line : lines) {
+                    if (line.startsWith("[Current Governor]")){
+                        governor = line.replace("[Current Governor] ", "");;
+                    }
+                }
+                return governor;
+            }
+            return null;
+        } else {
+            return Utils.readFile(GOVERNOR);
+        }
     }
 
     public boolean hasGovernor() {
@@ -354,6 +414,10 @@ public class GPUFreq {
 
     public int getCurFreq() {
         return Utils.strToInt(Utils.readFile(CUR_FREQ));
+    }
+
+    public boolean hasMaliGPU() {
+        return Utils.existFile(AVAILABLE_S7_GOVERNORS);
     }
 
     public boolean hasCurFreq() {
