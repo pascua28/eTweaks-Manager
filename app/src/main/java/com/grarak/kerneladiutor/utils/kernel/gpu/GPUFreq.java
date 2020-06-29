@@ -91,12 +91,15 @@ public class GPUFreq {
     private static final String CUR_S7_FREQ = "/sys/devices/14ac0000.mali/clock";
     private static final String AVAILABLE_S7_FREQ = "/sys/devices/14ac0000.mali/dvfs_table";
     private static final String AVAILABLE_S7_GOVERNORS = "/sys/devices/14ac0000.mali/dvfs_governor";
+    private static final String TUNABLE_HIGHSPEED_CLOCK = "/sys/devices/14ac0000.mali/highspeed_clock";
+    private static final String TUNABLE_HIGHSPEED_LOAD = "/sys/devices/14ac0000.mali/highspeed_load";
+    private static final String TUNABLE_HIGHSPEED_DELAY = "/sys/devices/14ac0000.mali/highspeed_delay";
 
     private final List<String> mGpuBusys = new ArrayList<>();
     private final HashMap<String, Integer> mCurrentFreqs = new HashMap<>();
     private final HashMap<String, Integer> mMaxFreqs = new HashMap<>();
     private final HashMap<String, Integer> mMinFreqs = new HashMap<>();
-    private final HashMap<String, Integer> mAvailableFreqs = new HashMap<>();
+    private static final HashMap<String, Integer> mAvailableFreqs = new HashMap<>();
     private final List<String> mScalingGovernors = new ArrayList<>();
     private final List<String> mAvailableGovernors = new ArrayList<>();
     private final List<String> mTunables = new ArrayList<>();
@@ -148,14 +151,14 @@ public class GPUFreq {
     private String BUSY;
     private String CUR_FREQ;
     private int CUR_FREQ_OFFSET;
-    private List<Integer> AVAILABLE_FREQS;
+    private static List<Integer> AVAILABLE_FREQS;
     private String MAX_FREQ;
     private int MAX_FREQ_OFFSET;
     private String MIN_FREQ;
     private int MIN_FREQ_OFFSET;
     private String GOVERNOR;
     private String[] AVAILABLE_GOVERNORS;
-    private int AVAILABLE_GOVERNORS_OFFSET;
+    private static int AVAILABLE_GOVERNORS_OFFSET;
     private String TUNABLES;
 
     private Integer[] AVAILABLE_2D_FREQS;
@@ -361,6 +364,16 @@ public class GPUFreq {
     }
 
     public boolean hasGovernor() {
+        if (hasMaliGPU()) {
+            if (GOVERNOR == null) {
+                for (String file : mScalingGovernors) {
+                    if (Utils.existFile(file)) {
+                        GOVERNOR = file;
+                        return true;
+                    }
+                }
+            }
+        }
         return GOVERNOR != null;
     }
 
@@ -377,6 +390,17 @@ public class GPUFreq {
     }
 
     public boolean hasMinFreq() {
+        if (hasMaliGPU()) {
+            if (MIN_FREQ == null) {
+                for (String file : mMinFreqs.keySet()) {
+                    if (Utils.existFile(file)) {
+                        MIN_FREQ = file;
+                        MIN_FREQ_OFFSET = mMinFreqs.get(file);
+                        return true;
+                    }
+                }
+            }
+        }
         return MIN_FREQ != null;
     }
 
@@ -393,6 +417,17 @@ public class GPUFreq {
     }
 
     public boolean hasMaxFreq() {
+        if (hasMaliGPU()) {
+            if (MAX_FREQ == null) {
+                for (String file : mMaxFreqs.keySet()) {
+                    if (Utils.existFile(file)) {
+                        MAX_FREQ = file;
+                        MAX_FREQ_OFFSET = mMaxFreqs.get(file);
+                        return true;
+                    }
+                }
+            }
+        }
         return MAX_FREQ != null;
     }
 
@@ -404,7 +439,26 @@ public class GPUFreq {
         return list;
     }
 
-    public List<Integer> getAvailableFreqs() {
+    public static List<Integer> getAvailableFreqs() {
+        if (hasMaliGPU()){
+            if (AVAILABLE_FREQS == null) {
+                for (String file : mAvailableFreqs.keySet()) {
+                    if (Utils.existFile(file)) {
+                        String freqs[] = Utils.readFile(file).split(" ");
+                        AVAILABLE_FREQS = new ArrayList<>();
+                        for (String freq : freqs) {
+                            if (!AVAILABLE_FREQS.contains(Utils.strToInt(freq))) {
+                                AVAILABLE_FREQS.add(Utils.strToInt(freq));
+                            }
+                        }
+                        AVAILABLE_GOVERNORS_OFFSET = mAvailableFreqs.get(file);
+                        break;
+                    }
+                }
+            }
+            if (AVAILABLE_FREQS == null) return null;
+            Collections.sort(AVAILABLE_FREQS);
+        }
         return AVAILABLE_FREQS;
     }
 
@@ -416,11 +470,22 @@ public class GPUFreq {
         return Utils.strToInt(Utils.readFile(CUR_FREQ));
     }
 
-    public boolean hasMaliGPU() {
+    public static boolean hasMaliGPU() {
         return Utils.existFile(AVAILABLE_S7_GOVERNORS);
     }
 
     public boolean hasCurFreq() {
+        if (hasMaliGPU()) {
+            if (CUR_FREQ == null) {
+                for (String file : mCurrentFreqs.keySet()) {
+                    if (Utils.existFile(file)) {
+                        CUR_FREQ = file;
+                        CUR_FREQ_OFFSET = mCurrentFreqs.get(file);
+                        return true;
+                    }
+                }
+            }
+        }
         return CUR_FREQ != null;
     }
 
@@ -432,7 +497,53 @@ public class GPUFreq {
     }
 
     public boolean hasBusy() {
+        if (hasMaliGPU()) {
+            if (BUSY == null) {
+                for (String file : mGpuBusys) {
+                    if (Utils.existFile(file)) {
+                        BUSY = file;
+                        return true;
+                    }
+                }
+            }
+        }
         return BUSY != null;
+    }
+
+    public static int getHighspeedClock() {
+        return Utils.strToInt(Utils.readFile(TUNABLE_HIGHSPEED_CLOCK));
+    }
+
+    public static void setHighspeedClock(String value, Context context) {
+        run(Control.write(value, TUNABLE_HIGHSPEED_CLOCK), TUNABLE_HIGHSPEED_CLOCK, context);
+    }
+
+    public static boolean hasHighspeedClock() {
+        return Utils.existFile(TUNABLE_HIGHSPEED_CLOCK);
+    }
+
+    public static int getHighspeedLoad() {
+        return Utils.strToInt(Utils.readFile(TUNABLE_HIGHSPEED_LOAD));
+    }
+
+    public static void setHighspeedLoad(int value, Context context) {
+        run(Control.write(String.valueOf(value), TUNABLE_HIGHSPEED_LOAD), TUNABLE_HIGHSPEED_LOAD, context);
+    }
+
+    public static boolean hasHighspeedLoad() {
+        return Utils.existFile(TUNABLE_HIGHSPEED_LOAD);
+    }
+
+    public static int getHighspeedDelay() {
+        return Utils.strToInt(Utils.readFile(TUNABLE_HIGHSPEED_DELAY));
+    }
+
+    public static void setHighspeedDelay(int value, Context context) {
+        run(Control.write(String.valueOf(value), TUNABLE_HIGHSPEED_DELAY), TUNABLE_HIGHSPEED_DELAY, context);
+    }
+
+    public static boolean hasHighspeedDelay() {
+        return Utils.existFile(TUNABLE_HIGHSPEED_DELAY);
     }
 
     public boolean supported() {
@@ -445,7 +556,7 @@ public class GPUFreq {
                 || has2dGovernor();
     }
 
-    private void run(String command, String id, Context context) {
+    private static void run(String command, String id, Context context) {
         Control.runSetting(command, ApplyOnBootFragment.GPU, id, context);
     }
 

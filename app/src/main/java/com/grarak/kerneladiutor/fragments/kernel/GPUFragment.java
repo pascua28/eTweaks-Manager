@@ -35,6 +35,7 @@ import com.grarak.kerneladiutor.views.recyclerview.RecyclerViewItem;
 import com.grarak.kerneladiutor.views.recyclerview.SeekBarView;
 import com.grarak.kerneladiutor.views.recyclerview.SelectView;
 import com.grarak.kerneladiutor.views.recyclerview.SwitchView;
+import com.grarak.kerneladiutor.views.recyclerview.TitleView;
 import com.grarak.kerneladiutor.views.recyclerview.XYGraphView;
 
 import com.smartpack.kernelmanager.utils.Adrenoboost;
@@ -42,6 +43,7 @@ import com.smartpack.kernelmanager.utils.DevfreqBoost;
 import com.smartpack.kernelmanager.utils.GPUMisc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -180,6 +182,85 @@ public class GPUFragment extends RecyclerViewFragment {
             });
 
             gpuCard.addItem(governor);
+
+            TitleView tun = new TitleView();
+            tun.setText(getString(R.string.gov_tunables));
+            gpuCard.addItem(tun);
+
+            if (GPUFreq.hasHighspeedClock()){
+                List<String> freqs = new ArrayList<>();
+                List<Integer> list = GPUFreq.getAvailableFreqs();
+                Collections.sort(list);
+                int value = 0;
+                for (int i = 0; i < list.size(); i++) {
+                    freqs.add(String.valueOf(list.get(i)));
+                    if (list.get(i) == GPUFreq.getHighspeedClock()){
+                        value = i;
+                    }
+                }
+
+                SeekBarView seekbar = new SeekBarView();
+                seekbar.setTitle(getString(R.string.tun_highspeed_clock));
+                seekbar.setSummary(getString(R.string.tun_highspeed_clock_summary));
+                seekbar.setUnit(getString(R.string.mhz));
+                seekbar.setItems(freqs);
+                seekbar.setProgress(value);
+                seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+                    @Override
+                    public void onStop(SeekBarView seekBarView, int position, String value) {
+                        GPUFreq.setHighspeedClock(value, getActivity());
+                    }
+                    @Override
+                    public void onMove(SeekBarView seekBarView, int position, String value) {
+                    }
+                });
+
+                gpuCard.addItem(seekbar);
+            }
+
+            if (GPUFreq.hasHighspeedLoad()){
+
+                SeekBarView seekbar = new SeekBarView();
+                seekbar.setTitle(getString(R.string.tun_highspeed_load));
+                seekbar.setSummary(getString(R.string.tun_highspeed_load_summary));
+                seekbar.setUnit(getString(R.string.percent));
+                seekbar.setMax(100);
+                seekbar.setMin(1);
+                seekbar.setProgress(GPUFreq.getHighspeedLoad() - 1);
+                seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+                    @Override
+                    public void onStop(SeekBarView seekBarView, int position, String value) {
+                        GPUFreq.setHighspeedLoad((position + 1), getActivity());
+                    }
+                    @Override
+                    public void onMove(SeekBarView seekBarView, int position, String value) {
+                    }
+                });
+
+                gpuCard.addItem(seekbar);
+            }
+
+            if (GPUFreq.hasHighspeedDelay()){
+
+                SeekBarView seekbar = new SeekBarView();
+                seekbar.setTitle(getString(R.string.tun_highspeed_delay));
+                seekbar.setSummary(getString(R.string.tun_highspeed_delay_summary));
+                seekbar.setUnit(getString(R.string.ms));
+                seekbar.setMax(5);
+                seekbar.setMin(0);
+                seekbar.setProgress(GPUFreq.getHighspeedDelay());
+                seekbar.setOnSeekBarListener(new SeekBarView.OnSeekBarListener() {
+                    @Override
+                    public void onStop(SeekBarView seekBarView, int position, String value) {
+                        GPUFreq.setHighspeedDelay(position, getActivity());
+                    }
+                    @Override
+                    public void onMove(SeekBarView seekBarView, int position, String value) {
+                    }
+                });
+
+                gpuCard.addItem(seekbar);
+            }
 
             if (mGPUFreq.hasTunables(governor.getValue())) {
                 DescriptionView tunables = new DescriptionView();

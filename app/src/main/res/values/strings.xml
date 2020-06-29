@@ -56,6 +56,7 @@
     <string name="kb">kB</string>
     <string name="px">px</string>
     <string name="db">dB</string>
+    <string name="percent">%</string>
 
     <!-- Special signs -->
     <string name="minus" translatable="false">-</string>
@@ -423,6 +424,13 @@
     <string name="workload">Workload</string>
     <string name="workload_summary">Adreno idler will more actively try to ramp down the frequency if this is set to a higher value.</string>
     <string name="gpu_powelevel">GPU Power Level</string>
+    <string name="tun_highspeed_clock">GPU Highspeed Clock</string>
+    <string name="tun_highspeed_clock_summary">Boost the minimum frequency the GPU scales up to.</string>
+    <string name="tun_highspeed_load">GPU Highspeed Load</string>
+    <string name="tun_highspeed_load_summary">Jump the minimum frequency level to highspeed_clock when the GPU utilization over this value.</string>
+    <string name="tun_highspeed_delay">GPU Highspeed Delay</string>
+    <string name="tun_highspeed_delay_summary">Jump the minimum frequency level to highspeed_clock when the GPU utilization over highspeed_load and over this delayed value.</string>
+    <string name="gov_tunables">Governor Tunables</string>
 
     <!--Thermal-->
     <string name="thermal_info">Use only one thermal driver from the following options, using more at the same time may cause unexpected behavior.</string>
