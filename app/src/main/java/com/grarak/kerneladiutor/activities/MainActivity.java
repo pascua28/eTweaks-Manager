@@ -33,6 +33,7 @@ import com.google.android.gms.ads.MobileAds;
 import com.grarak.kerneladiutor.R;
 import com.grarak.kerneladiutor.database.tools.profiles.Profiles;
 import com.grarak.kerneladiutor.services.profile.Tile;
+import com.grarak.kerneladiutor.utils.AppSettings;
 import com.grarak.kerneladiutor.utils.Device;
 import com.grarak.kerneladiutor.utils.Prefs;
 import com.grarak.kerneladiutor.utils.Utils;
@@ -45,6 +46,7 @@ import com.grarak.kerneladiutor.utils.kernel.cpuhotplug.Hotplug;
 import com.grarak.kerneladiutor.utils.kernel.cpuhotplug.QcomBcl;
 import com.grarak.kerneladiutor.utils.kernel.cpuvoltage.Voltage;
 import com.grarak.kerneladiutor.utils.kernel.gpu.GPU;
+import com.grarak.kerneladiutor.utils.kernel.gpu.GPUFreq;
 import com.grarak.kerneladiutor.utils.kernel.io.IO;
 import com.grarak.kerneladiutor.utils.kernel.ksm.KSM;
 import com.grarak.kerneladiutor.utils.kernel.misc.Vibration;
@@ -55,6 +57,15 @@ import com.grarak.kerneladiutor.utils.kernel.wake.Wake;
 import com.grarak.kerneladiutor.utils.root.RootUtils;
 
 import com.smartpack.kernelmanager.utils.Wakelocks;
+
+import com.sammy.etweaks.fragments.kernel.BusCamFragment;
+import com.sammy.etweaks.fragments.kernel.BusDispFragment;
+import com.sammy.etweaks.fragments.kernel.BusIntFragment;
+import com.sammy.etweaks.fragments.kernel.BusMifFragment;
+import com.sammy.etweaks.utils.kernel.bus.VoltageCam;
+import com.sammy.etweaks.utils.kernel.bus.VoltageDisp;
+import com.sammy.etweaks.utils.kernel.bus.VoltageInt;
+import com.sammy.etweaks.utils.kernel.bus.VoltageMif;
 
 import org.frap129.spectrum.Spectrum;
 
@@ -89,6 +100,59 @@ public class MainActivity extends BaseActivity {
         // Check if exist /data/.mtweaks folder
         if (!Utils.existFile("/data/.mtweaks")) {
             RootUtils.runCommand("mkdir /data/.mtweaks");
+        }
+
+        // Check is kernel is changed
+        String kernel_old = AppSettings.getString("kernel_version_old", "", this);
+        String kernel_new = Device.getKernelVersion(true);
+
+        if (!kernel_old.equals(kernel_new)) {
+            AppSettings.saveString("kernel_version_old", kernel_new, this);
+            AppSettings.saveBoolean("gpu_voltage_saved", false, this);
+            AppSettings.saveBoolean("busMif_voltage_saved", false, this);
+            AppSettings.saveBoolean("busInt_voltage_saved", false, this);
+            AppSettings.saveBoolean("busDisp_voltage_saved", false, this);
+            AppSettings.saveBoolean("busCam_voltage_saved", false, this);
+        }
+
+        // Save backup of Bus Mif stock voltages
+        if (!Utils.existFile(VoltageMif.BACKUP) || !AppSettings.getBoolean("busMif_voltage_saved", false, this)){
+            if (VoltageMif.supported()){
+                RootUtils.runCommand("cp " + VoltageMif.VOLTAGE + " " + VoltageMif.BACKUP);
+                AppSettings.saveBoolean("busMif_voltage_saved", true, this);
+            }
+        }
+
+        // Save backup of Bus Int stock voltages
+        if (!Utils.existFile(VoltageInt.BACKUP) || !AppSettings.getBoolean("busInt_voltage_saved", false, this)){
+            if (VoltageInt.supported()){
+                RootUtils.runCommand("cp " + VoltageInt.VOLTAGE + " " + VoltageInt.BACKUP);
+                AppSettings.saveBoolean("busInt_voltage_saved", true, this);
+            }
+        }
+
+        // Save backup of Bus Disp stock voltages
+        if (!Utils.existFile(VoltageDisp.BACKUP) || !AppSettings.getBoolean("busDisp_voltage_saved", false, this)){
+            if (VoltageDisp.supported()){
+                RootUtils.runCommand("cp " + VoltageDisp.VOLTAGE + " " + VoltageDisp.BACKUP);
+                AppSettings.saveBoolean("busDisp_voltage_saved", true, this);
+            }
+        }
+
+        // Save backup of Bus Cam stock voltages
+        if (!Utils.existFile(VoltageCam.BACKUP) || !AppSettings.getBoolean("busCam_voltage_saved", false, this)){
+            if (VoltageCam.supported()){
+                RootUtils.runCommand("cp " + VoltageCam.VOLTAGE + " " + VoltageCam.BACKUP);
+                AppSettings.saveBoolean("busCam_voltage_saved", true, this);
+            }
+        }
+
+        // Save backup of GPU stock voltages
+        if (!AppSettings.getBoolean("gpu_voltage_saved", false, this)) {
+            if (GPUFreq.supported() && GPUFreq.hasVoltage()) {
+                RootUtils.runCommand("cp " + GPUFreq.AVAILABLE_S7_FREQS + " " + GPUFreq.BACKUP);
+                AppSettings.saveBoolean("gpu_voltage_saved", true, this);
+            }
         }
 
         setContentView(R.layout.activity_main);
