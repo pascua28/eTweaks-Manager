@@ -56,6 +56,8 @@ import com.grarak.kerneladiutor.utils.kernel.thermal.Thermal;
 import com.grarak.kerneladiutor.utils.kernel.wake.Wake;
 import com.grarak.kerneladiutor.utils.root.RootUtils;
 
+import com.sammy.etweaks.utils.kernel.cpuvoltage.VoltageCl0;
+import com.sammy.etweaks.utils.kernel.cpuvoltage.VoltageCl1;
 import com.smartpack.kernelmanager.utils.Wakelocks;
 
 import com.sammy.etweaks.fragments.kernel.BusCamFragment;
@@ -108,11 +110,29 @@ public class MainActivity extends BaseActivity {
 
         if (!kernel_old.equals(kernel_new)) {
             AppSettings.saveString("kernel_version_old", kernel_new, this);
+            AppSettings.saveBoolean("cl0_voltage_saved", false, this);
+            AppSettings.saveBoolean("cl1_voltage_saved", false, this);
             AppSettings.saveBoolean("gpu_voltage_saved", false, this);
             AppSettings.saveBoolean("busMif_voltage_saved", false, this);
             AppSettings.saveBoolean("busInt_voltage_saved", false, this);
             AppSettings.saveBoolean("busDisp_voltage_saved", false, this);
             AppSettings.saveBoolean("busCam_voltage_saved", false, this);
+        }
+
+        // Save backup of Cluster0 stock voltages
+        if (!Utils.existFile(VoltageCl0.BACKUP) || !AppSettings.getBoolean("cl0_voltage_saved", false, this) ){
+            if (VoltageCl0.supported()){
+                RootUtils.runCommand("cp " + VoltageCl0.CL0_VOLTAGE + " " + VoltageCl0.BACKUP);
+                AppSettings.saveBoolean("cl0_voltage_saved", true, this);
+            }
+        }
+
+        // Save backup of Cluster1 stock voltages
+        if (!Utils.existFile(VoltageCl1.BACKUP) || !AppSettings.getBoolean("cl1_voltage_saved", false, this)){
+            if (VoltageCl1.supported()){
+                RootUtils.runCommand("cp " + VoltageCl1.CL1_VOLTAGE + " " + VoltageCl1.BACKUP);
+                AppSettings.saveBoolean("cl1_voltage_saved", true, this);
+            }
         }
 
         // Save backup of Bus Mif stock voltages

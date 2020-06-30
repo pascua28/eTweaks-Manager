@@ -53,6 +53,8 @@ import com.grarak.kerneladiutor.fragments.kernel.VMFragment;
 import com.grarak.kerneladiutor.fragments.kernel.WakeFragment;
 import com.grarak.kerneladiutor.utils.Prefs;
 
+import com.sammy.etweaks.fragments.kernel.CPUVoltageCl0Fragment;
+import com.sammy.etweaks.fragments.kernel.CPUVoltageCl1Fragment;
 import com.smartpack.kernelmanager.fragments.CustomControlsFragment;
 import com.smartpack.kernelmanager.fragments.KLapseFragment;
 import com.smartpack.kernelmanager.fragments.WakelockFragment;
@@ -65,6 +67,8 @@ import java.util.HashMap;
 public class ApplyOnBootFragment extends BaseFragment {
 
     public static final String CPU = "cpu_onboot";
+    public static final String CPU_CL0_VOLTAGE = "cpucl0voltage_onboot";
+    public static final String CPU_CL1_VOLTAGE = "cpucl1voltage_onboot";
     public static final String CPU_VOLTAGE = "cpuvoltage_onboot";
     public static final String CPU_HOTPLUG = "cpuhotplug_onboot";
     public static final String THERMAL = "thermal_onboot";
@@ -92,6 +96,8 @@ public class ApplyOnBootFragment extends BaseFragment {
 
     static {
         sAssignments.put(CPUFragment.class, CPU);
+        sAssignments.put(CPUVoltageCl0Fragment.class, CPU_CL0_VOLTAGE);
+        sAssignments.put(CPUVoltageCl1Fragment.class, CPU_CL1_VOLTAGE);
         sAssignments.put(CPUVoltageFragment.class, CPU_VOLTAGE);
         sAssignments.put(CPUHotplugFragment.class, CPU_HOTPLUG);
         sAssignments.put(ThermalFragment.class, THERMAL);

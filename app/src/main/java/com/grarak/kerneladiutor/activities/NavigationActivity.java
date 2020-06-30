@@ -102,6 +102,10 @@ import com.sammy.etweaks.fragments.kernel.BusMifFragment;
 import org.frap129.spectrum.SpectrumFragment;
 import org.frap129.spectrum.Spectrum;
 
+import com.sammy.etweaks.fragments.kernel.CPUVoltageCl0Fragment;
+import com.sammy.etweaks.fragments.kernel.CPUVoltageCl1Fragment;
+import com.sammy.etweaks.utils.kernel.cpuvoltage.VoltageCl0;
+import com.sammy.etweaks.utils.kernel.cpuvoltage.VoltageCl1;
 import com.smartpack.kernelmanager.fragments.CustomControlsFragment;
 import com.smartpack.kernelmanager.fragments.KLapseFragment;
 import com.smartpack.kernelmanager.fragments.ScriptMangerFragment;
@@ -244,6 +248,12 @@ public class NavigationActivity extends BaseActivity
         }
         mFragments.add(new NavigationActivity.NavigationFragment(R.string.misc, MiscFragment.class, R.drawable.ic_clear));
         mFragments.add(new NavigationActivity.NavigationFragment(R.string.voltage_control));
+        if (VoltageCl0.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.cpucl0_voltage, CPUVoltageCl0Fragment.class, R.drawable.ic_bolt));
+        }
+        if (VoltageCl1.supported()) {
+            mFragments.add(new NavigationActivity.NavigationFragment(R.string.cpucl1_voltage, CPUVoltageCl1Fragment.class, R.drawable.ic_bolt));
+        }
         if (VoltageMif.supported()) {
             mFragments.add(new NavigationActivity.NavigationFragment(R.string.busMif_voltage, BusMifFragment.class, R.drawable.ic_bolt));
         }

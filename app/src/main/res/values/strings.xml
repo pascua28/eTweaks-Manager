@@ -387,6 +387,10 @@
     <string name="global_offset">Global Offset</string>
     <string name="override_vmin">Override Minimum Voltage</string>
     <string name="override_vmin_summary">Disable to remove manufacturer limits on undervolting</string>
+    <string name="cpuCl1_volt_control">CPU big Voltage Control</string>
+    <string name="cpuCl0_volt_control">CPU LITTLE Voltage Control</string>
+    <string name="cpuCl1_volt">CPU big Voltages</string>
+    <string name="cpuCl0_volt">CPU LITTLE Voltages</string>
 
     <!-- GPU -->
     <string name="frequencies">Frequencies</string>
